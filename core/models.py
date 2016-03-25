@@ -9,6 +9,7 @@ class Exercise(models.Model):
 
 
 class Routine(models.Model):
+    """TODO: field explanations"""
     name = models.TextField(default="")
     _cycle_length = models.IntegerField(
         default=1, db_column="cycle_length")
@@ -45,18 +46,39 @@ class Routine(models.Model):
 
     @cycle_position.setter
     def cycle_position(self, num):
-        self._cycle_position = num
+        if 0 < num <= self.cycle_length:
+            self._cycle_position = num
+        else:
+            pass
+            # todo: handle this somehow
 
 
 class RoutineDay(models.Model):
     name = models.TextField(default="")
     next_date = models.DateField(default=datetime.date.today)
+    routine = models.ForeignKey(
+        Routine, default=1, on_delete=models.CASCADE,
+        related_name='routinedays')
+    _position = models.IntegerField(
+        default=1, db_column="position")
 
-    #
+    @property
+    def position(self):
+        return self._position
+
+    @position.setter
+    def position(self, num):
+        if 0 < num <= self.routine.cycle_length:
+            self._position = num
+        else:
+            pass
+            # todo: handle this somehow
 
 
 class RoutineDaySlot(models.Model):
     pass
+
+    # order
 
 
 class Workout(models.Model):

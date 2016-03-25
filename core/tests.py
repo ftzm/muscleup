@@ -111,6 +111,23 @@ class RoutineModelTest(TestCase):
         self.assertEqual(second_saved_routine.cycle_length, 7)
         self.assertEqual(second_saved_routine.cycle_position, 2)
 
+    def test_no_invalid_cycle_position(self):
+        first_routine = Routine()
+        first_routine.name = "Routine One"
+        first_routine.cycle_length = 7
+        first_routine.save()
+
+        first_routine.cycle_position = 8
+        first_routine.save()
+
+        self.assertEqual(first_routine.cycle_position, 1)
+
+    def test_update_cycle_position(self):
+        pass
+
+    def test_keep_workoutday_positions_inbounds(self):
+        pass
+
 
 class RoutineDayModelTest(TestCase):
 
@@ -122,12 +139,15 @@ class RoutineDayModelTest(TestCase):
         first_routineday = RoutineDay()
         first_routineday.name = "RoutineDay One"
         first_routineday.routine = Routine.objects.get(name="Routine One")
+        first_routineday.position = 3
         first_routineday.save()
 
         second_routineday = RoutineDay()
         second_routineday.name = "RoutineDay Two"
         next_date = datetime.date.today() + datetime.timedelta(7)
         second_routineday.next_date = next_date
+        second_routineday.routine = Routine.objects.get(name="Routine One")
+        second_routineday.position = 5
         second_routineday.save()
 
         saved_routinedays = RoutineDay.objects.all()
@@ -136,21 +156,68 @@ class RoutineDayModelTest(TestCase):
         first_saved_routineday = saved_routinedays[0]
         second_saved_routineday = saved_routinedays[1]
         self.assertEqual(first_saved_routineday.name, "RoutineDay One")
+        self.assertEqual(first_saved_routineday.routine,
+                         Routine.objects.get(name="Routine One"))
+        self.assertEqual(first_saved_routineday.position, 3)
         self.assertEqual(second_saved_routineday.name, "RoutineDay Two")
         self.assertEqual(second_saved_routineday.next_date, next_date)
+        self.assertEqual(second_saved_routineday.routine,
+                         Routine.objects.get(name="Routine One"))
+        self.assertEqual(second_saved_routineday.position, 5)
+
+    def test_no_invalid_position(self):
+        first_routineday = RoutineDay()
+        first_routineday.name = "RoutineDay One"
+        first_routineday.routine = Routine.objects.get(name="Routine One")
+        first_routineday.save()
+
+        first_routineday.position = 9
+
+        self.assertEqual(first_routineday.position, 1)
+
+    def test_assign_exercises_to_routineday(self):
+        pass
+
+    def test_remove_exercises_from_routineday(self):
+        pass
 
 
 class RoutineDaySlotModelTest(TestCase):
-    pass
+
+    def test_saving_and_retrieving_routinedayslot(self):
+        pass
+        # new slots increase in order number
+
+    def test_ordering_slots(self):
+        pass
+
+    def test_no_slot_gaps(self):
+        pass
 
 
 class ProgressionModelTest(TestCase):
-    pass
+
+    def test_saving_and_retrieving_progression(self):
+        pass
+
+    def test_assign_exercise_to_progression(self):
+        pass
+
+    def test_remove_exercise_from_progression(self):
+        pass
 
 
 class ProgressionSlotModelTest(TestCase):
-    pass
 
+    def test_saving_and_retrieving_progressionslot(self):
+        pass
+        # new slots increase in order number
+
+    def test_ordering_progression_slots(self):
+        pass
+
+    def test_no_slot_gaps(self):
+        pass
 
 class ExerciseWorkoutSetTest(TestCase):
 
