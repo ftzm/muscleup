@@ -2,6 +2,7 @@
 
 import datetime
 from django.db import models
+from django.utils import timezone
 
 
 class Exercise(models.Model):
@@ -15,22 +16,12 @@ class Routine(models.Model):
         default=1, db_column="cycle_length")
     _cycle_position = models.IntegerField(
         default=1, db_column="cycle_position")
+    cycle_last_set = models.DateField(default=timezone.now)
 
-    # update_cycle_position
-    """
-         if datetime.date.today() == self.cycle_position_set:
-            return
-        try:
-            delta = datetime.date.today() - self.cycle_position_set
-        except:
-            return
-        shift = delta.days % self.cycle_length
-        new_position = self.cycle_position + shift
-        if new_position > self.cycle_length:
-            new_position = new_position - self.cycle_length
-        self.cycle_position = new_position
-        self.cycle_position_set = datetime.date.today()
-        """
+    def update_cycle_position(self):
+        self.cycle_position = self.cycle_position + \
+            (datetime.date.today() - self.cycle_last_set).days \
+            % self.cycle_length
 
     @property
     def cycle_length(self):
@@ -50,12 +41,11 @@ class Routine(models.Model):
             self._cycle_position = num
         else:
             pass
-            # todo: handle this somehow
+        self.cycle_last_set = datetime.date.today()
 
 
 class RoutineDay(models.Model):
     name = models.TextField(default="")
-    next_date = models.DateField(default=datetime.date.today)
     routine = models.ForeignKey(
         Routine, default=1, on_delete=models.CASCADE,
         related_name='routinedays')
@@ -77,8 +67,6 @@ class RoutineDay(models.Model):
 
 class RoutineDaySlot(models.Model):
     pass
-
-    # order
 
 
 class Workout(models.Model):
