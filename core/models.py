@@ -150,3 +150,63 @@ class Set(models.Model):
     workout = models.ForeignKey(
         Workout, default=1, on_delete=models.CASCADE,
         related_name='sets')
+
+
+class Progression(models.Model):
+    name = models.TextField(default="", unique=True)
+
+    def close_gap(self, gap):
+        for slot in self.progressionslots.all():
+            if slot.order > gap:
+                slot._order -= 1
+                slot.save()
+
+
+class ProgressionSlot(models.Model):
+    """
+    Relationship object between progressions and exercises.
+    For ordering and maybe more later.
+    """
+    exercise = models.ForeignKey(
+        Exercise, default=1, on_delete=models.CASCADE,
+        related_name='progressionslots')
+    _progression = models.ForeignKey(
+        Progression, default=1, on_delete=models.CASCADE,
+        related_name='progressionslots',
+        db_column="progression")
+    _order = models.IntegerField(default=1, db_column="order")
+
+    @property
+    def order(self):
+        return self._order
+
+    @order.setter
+    def order(self, new_order):
+        other_slots = self.progression.progressionslots.all()
+        old_order = self._order
+        if new_order > old_order:
+            middle_slots = [s for s in other_slots
+                            if old_order < s.order <= new_order]
+            for slot in middle_slots:
+                slot._order -= 1
+                slot.save()
+        elif new_order < old_order:
+            middle_slots = [s for s in other_slots
+                            if old_order > s.order >= new_order]
+            for slot in middle_slots:
+                slot._order += 1
+                slot.save()
+        self._order = new_order
+
+    @property
+    def progression(self):
+        return self._progression
+
+    @progression.setter
+    def progression(self, progression):
+        try:
+            self._order = 1 + \
+                max([r.order for r in progression.progressionslots.all()])
+        except ValueError:
+            pass
+        self._progression = progression

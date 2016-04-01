@@ -8,9 +8,12 @@ from core.models import Workout
 from core.models import Routine
 from core.models import RoutineDay
 from core.models import RoutineDaySlot
+from core.models import Progression
+from core.models import ProgressionSlot
 
+# importin the signal gets it running automatically, despite being "unused"
 from core.signals import trigger_routinedayslot_gapclose
-from unittest.mock import patch
+from core.signals import trigger_progressionslot_gapclose
 
 
 class ExerciseModelTest(TestCase):
@@ -374,7 +377,12 @@ class RoutineDaySlotModelTest(TestCase):
 class ProgressionModelTest(TestCase):
 
     def test_saving_and_retrieving_progression(self):
-        pass
+        first_progression = Progression.objects.create(name="handstand")
+        second_progression = Progression.objects.create(name="muscleup")
+
+        self.assertEqual(Progression.objects.count(), 2)
+        self.assertEqual(first_progression.name, "handstand")
+        self.assertEqual(second_progression.name, "muscleup")
 
     def test_assign_exercise_to_progression(self):
         pass
@@ -385,15 +393,86 @@ class ProgressionModelTest(TestCase):
 
 class ProgressionSlotModelTest(TestCase):
 
+    def setUp(self):
+        Progression.objects.create(name="Handstand")
+        Exercise.objects.create(name="Pushup")
+        Exercise.objects.create(name="Plank")
+        Exercise.objects.create(name="Squat")
+
     def test_saving_and_retrieving_progressionslot(self):
-        pass
-        # new slots increase in order number
+        first_progressionslot = ProgressionSlot.objects.create(
+            progression=Progression.objects.get(name="Handstand"),
+            exercise=Exercise.objects.get(name="Pushup"))
+        second_progressionslot = ProgressionSlot.objects.create(
+            progression=Progression.objects.get(name="Handstand"),
+            exercise=Exercise.objects.get(name="Plank"))
+
+        self.assertEqual(ProgressionSlot.objects.count(), 2)
+        self.assertEqual(first_progressionslot.exercise,
+                         Exercise.objects.get(name="Pushup"))
+        self.assertEqual(second_progressionslot.exercise,
+                         Exercise.objects.get(name="Plank"))
+        self.assertEqual(first_progressionslot.order, 1)
+        self.assertEqual(second_progressionslot.order, 2)
 
     def test_ordering_progression_slots(self):
-        pass
+        first_progressionslot = ProgressionSlot()
+        first_progressionslot.progression = Progression.objects.get(
+            name="Handstand")
+        first_progressionslot.exercise = Exercise.objects.get(name="Pushup")
+        first_progressionslot.save()
+        second_progressionslot = ProgressionSlot()
+        second_progressionslot.progression = Progression.objects.get(
+            name="Handstand")
+        second_progressionslot.exercise = Exercise.objects.get(name="Plank")
+        second_progressionslot.save()
+        third_progressionslot = ProgressionSlot()
+        third_progressionslot.progression = Progression.objects.get(
+            name="Handstand")
+        third_progressionslot.exercise = Exercise.objects.get(name="Squat")
+        third_progressionslot.save()
 
-    def test_no_slot_gaps(self):
-        pass
+        first_progressionslot.order = 3
+        second_progressionslot.refresh_from_db()
+        third_progressionslot.refresh_from_db()
+
+        self.assertEqual(first_progressionslot.order, 3)
+        self.assertEqual(second_progressionslot.order, 1)
+        self.assertEqual(third_progressionslot.order, 2)
+
+        first_progressionslot.order = 1
+        second_progressionslot.refresh_from_db()
+        third_progressionslot.refresh_from_db()
+
+        self.assertEqual(first_progressionslot.order, 1)
+        self.assertEqual(second_progressionslot.order, 2)
+        self.assertEqual(third_progressionslot.order, 3)
+
+    def test_remove_slot_gaps_function(self):
+        first_progressionslot = ProgressionSlot()
+        first_progressionslot.progression = Progression.objects.get(
+            name="Handstand")
+        first_progressionslot.exercise = Exercise.objects.get(name="Pushup")
+        first_progressionslot.save()
+        second_progressionslot = ProgressionSlot()
+        second_progressionslot.progression = Progression.objects.get(
+            name="Handstand")
+        second_progressionslot.exercise = Exercise.objects.get(name="Plank")
+        second_progressionslot.save()
+        third_progressionslot = ProgressionSlot()
+        third_progressionslot.progression = Progression.objects.get(
+            name="Handstand")
+        third_progressionslot.exercise = Exercise.objects.get(name="Squat")
+        third_progressionslot.save()
+
+        first_progressionslot.delete()
+        self.assertEqual(ProgressionSlot.objects.count(), 2)
+
+        second_progressionslot.refresh_from_db()
+        third_progressionslot.refresh_from_db()
+
+        self.assertEqual(second_progressionslot.order, 1)
+        self.assertEqual(third_progressionslot.order, 2)
 
 
 class ExerciseWorkoutSetTest(TestCase):
