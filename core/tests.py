@@ -1,3 +1,4 @@
+# pylint: disable=C0111
 """unit tests for muscleup core models and functions"""
 
 import datetime
@@ -11,9 +12,9 @@ from core.models import RoutineDaySlot
 from core.models import Progression
 from core.models import ProgressionSlot
 
-# importin the signal gets it running automatically, despite being "unused"
-from core.signals import trigger_routinedayslot_gapclose
-from core.signals import trigger_progressionslot_gapclose
+# importing the signals module gets it running automatically
+# complains of being unused since it isn't used explicitly
+import core.signals  # pylint: disable=unused-import
 
 
 class ExerciseModelTest(TestCase):
@@ -34,27 +35,6 @@ class ExerciseModelTest(TestCase):
         second_saved_exercise = saved_exercises[1]
         self.assertEqual(first_saved_exercise.name, "Pushup")
         self.assertEqual(second_saved_exercise.name, "Pullup")
-
-
-class WorkoutModelTest(TestCase):
-
-    def test_saving_and_retrieving_workouts(self):
-        first_workout = Workout()
-        first_workout.name = "Workout One"
-        first_workout.save()
-
-        second_workout = Workout()
-        second_workout.name = "Workout Two"
-        second_workout.save()
-
-        saved_workouts = Workout.objects.all()
-        self.assertEqual(saved_workouts.count(), 2)
-
-        first_saved_workout = saved_workouts[0]
-        second_saved_workout = saved_workouts[1]
-        self.assertEqual(first_saved_workout.name, "Workout One")
-        self.assertEqual(first_saved_workout.date, datetime.date.today())
-        self.assertEqual(second_saved_workout.name, "Workout Two")
 
 
 class SetModelTest(TestCase):
@@ -384,11 +364,26 @@ class ProgressionModelTest(TestCase):
         self.assertEqual(first_progression.name, "handstand")
         self.assertEqual(second_progression.name, "muscleup")
 
-    def test_assign_exercise_to_progression(self):
-        pass
+    def test_assign_exercises_to_progression(self):
+        progression = Progression(name="Progression One",)
+        progression.save()
 
-    def test_remove_exercise_from_progression(self):
-        pass
+        exercise = Exercise.objects.create(name="Situp")
+        progression.add_exercise(exercise)
+
+        self.assertEqual(progression.progressionslots.count(), 1)
+        self.assertEqual(
+            progression.progressionslots.first().exercise.name, "Situp")
+
+    def test_remove_exercises_from_progression(self):
+        progression = Progression(name="Progression One")
+        progression.save()
+
+        exercise = Exercise.objects.create(name="Situp")
+        progression.add_exercise(exercise)
+
+        progression.remove_exercise(exercise.name)
+        self.assertEqual(progression.progressionslots.count(), 0)
 
 
 class ProgressionSlotModelTest(TestCase):
@@ -465,6 +460,10 @@ class ProgressionSlotModelTest(TestCase):
         third_progressionslot.exercise = Exercise.objects.get(name="Squat")
         third_progressionslot.save()
 
+        self.assertEqual(first_progressionslot.order, 1)
+        self.assertEqual(second_progressionslot.order, 2)
+        self.assertEqual(third_progressionslot.order, 3)
+
         first_progressionslot.delete()
         self.assertEqual(ProgressionSlot.objects.count(), 2)
 
@@ -475,34 +474,126 @@ class ProgressionSlotModelTest(TestCase):
         self.assertEqual(third_progressionslot.order, 2)
 
 
-class ExerciseWorkoutSetTest(TestCase):
+    def test_set_current(self):
+        progression = Progression.objects.first()
+        progressionslots = [ProgressionSlot.objects.create(
+            exercise=e, progression=progression) for e in Exercise.objects.all()]
+
+        progressionslots[1].current = True
+        progressionslots[1].save()
+        progressionslots = progression.progressionslots.all()
+
+        self.assertTrue(progressionslots[1].current)
+
+    def test_only_one_current(self):
+        progression = Progression.objects.first()
+        progressionslots = [ProgressionSlot.objects.create(
+            exercise=e, progression=progression) for e in Exercise.objects.all()]
+        progressionslots[0].current = True
+        progressionslots[0].save()
+        self.assertTrue(progressionslots[0].current)
+
+        progressionslots[1].current = True
+        progressionslots[1].save()
+
+        progressionslots = progression.progressionslots.all()
+        self.assertFalse(progressionslots[0].current)
+        self.assertTrue(progressionslots[1].current)
+
+class WorkoutModelTest(TestCase):
 
     def setUp(self):
+        first_routine = Routine()
+        first_routine.name = "Spring Workout"
+        first_routine.cycle_length = 7
+        first_routine.cycle_position = 1
+        first_routine.cycle_last_set = \
+            datetime.date.today() - datetime.timedelta(1)
+        first_routine.save()
+
+        first_routineday = RoutineDay()
+        first_routineday.name = "A"
+        first_routineday.routine = Routine.objects.get(name="Spring Workout")
+        first_routineday.position = 7
+        first_routineday.save()
+
+        second_routineday = RoutineDay()
+        second_routineday.name = "B"
+        second_routineday.routine = Routine.objects.get(name="Spring Workout")
+        second_routineday.position = 7
+        second_routineday.save()
+
+    def test_saving_and_retrieving_workouts(self):
+        Workout.objects.create_workout(
+            RoutineDay.objects.get(name="A"))
+        Workout.objects.create_workout(
+            RoutineDay.objects.get(name="A"))
+        Workout.objects.create_workout(
+            RoutineDay.objects.get(name="B"))
+        Workout.objects.create_workout()
+
+        saved_workouts = Workout.objects.all()
+        self.assertEqual(saved_workouts.count(), 4)
+
+        first_saved_workout = saved_workouts[0]
+        second_saved_workout = saved_workouts[1]
+        third_saved_workout = saved_workouts[2]
+        fourth_saved_workout = saved_workouts[3]
+        self.assertEqual(first_saved_workout.name, "Spring Workout - A - 1")
+        self.assertEqual(first_saved_workout.date, datetime.date.today())
+        self.assertEqual(second_saved_workout.name, "Spring Workout - A - 2")
+        self.assertEqual(second_saved_workout.date, datetime.date.today())
+        self.assertEqual(third_saved_workout.name, "Spring Workout - B - 1")
+        self.assertEqual(third_saved_workout.date, datetime.date.today())
+        self.assertEqual(fourth_saved_workout.name, "Untitled - 1")
+        self.assertEqual(fourth_saved_workout.date, datetime.date.today())
+
+
+class ExerciseWorkoutSetTest(TestCase):
+    def setUp(self):
+        first_routine = Routine()
+        first_routine.name = "Spring Workout"
+        first_routine.cycle_length = 7
+        first_routine.cycle_position = 1
+        first_routine.cycle_last_set = \
+            datetime.date.today() - datetime.timedelta(1)
+        first_routine.save()
+
+        first_routineday = RoutineDay()
+        first_routineday.name = "A"
+        first_routineday.routine = Routine.objects.get(name="Spring Workout")
+        first_routineday.position = 7
+        first_routineday.save()
+
         exercise_names = ["Pushup", "Pullup", "Squat", "Plank"]
         exercises = [Exercise.objects.create(name=name)
                      for name in exercise_names]
-        workout_names = ["Bodyweight 1", "Bodyweight 2", "Bodyweight 3"]
-        workouts = [Workout.objects.create(name=name)
-                    for name in workout_names]
+
+        for exercise in exercises:
+            RoutineDaySlot.objects.create(
+                exercise=exercise,
+                routineday=first_routineday)
+
+        workouts = [Workout.objects.create_workout(routineday=first_routineday)
+                    for i in range(3)]
+
         for workout in workouts:
-            for exercise in exercises:
-                for i in [10, 9, 8]:
-                    Set.objects.create(
-                        exercise=exercise,
-                        reps=i,
-                        workout=workout)
+            for routinedayslot in first_routineday.routinedayslots.all():
+                for i in range(12, 9, -1):
+                    Set.objects.create(exercise=routinedayslot.exercise, reps=i,
+                                       workout=workout)
 
     def test_right_number_of_sets(self):
         saved_sets = Set.objects.all()
         self.assertEqual(saved_sets.count(), 36)
 
     def test_sets_deleted_with_workout(self):
-        Workout.objects.get(name="Bodyweight 3").delete()
+        Workout.objects.get(name="Spring Workout - A - 2").delete()
         saved_sets = Set.objects.all()
         self.assertEqual(saved_sets.count(), 24)
 
     def test_change_workout_date(self):
-        first_workout = Workout.objects.get(name="Bodyweight 1")
+        first_workout = Workout.objects.get(name="Spring Workout - A - 1")
         first_workout.date = first_workout.date - datetime.timedelta(1)
         first_workout.save()
 

@@ -136,10 +136,27 @@ class RoutineDaySlot(models.Model):
         self._routineday = routineday
 
 
+class WorkoutManager(models.Manager): #pylint: disable=too-few-public-methods
+    def create_workout(self, routineday=None):
+        if routineday is not None:
+            previous = Workout.objects.filter(routineday=routineday).count()
+            name = "{} - {} - {}".format(
+                routineday.routine.name, routineday.name, previous+1)
+        else:
+            previous = Workout.objects.filter(routineday__isnull=True).count()
+            name = "Untitled - {}".format(previous+1)
+        workout = self.create(routineday=routineday, name=name)
+        return workout
+
+
 class Workout(models.Model):
     name = models.TextField(default='')
     date = models.DateField(default=datetime.date.today)
+    routineday = models.ForeignKey(
+        RoutineDay, null=True, on_delete=models.CASCADE,
+        related_name='workouts')
 
+    objects = WorkoutManager()
 
 class Set(models.Model):
     exercise = models.ForeignKey(
@@ -154,6 +171,15 @@ class Set(models.Model):
 
 class Progression(models.Model):
     name = models.TextField(default="", unique=True)
+
+    def add_exercise(self, exercise):
+        ProgressionSlot.objects.create(
+            progression=self, exercise=exercise)
+
+    def remove_exercise(self, name):
+        progressionslot = self.progressionslots.filter(exercise__name=name)
+        if progressionslot:
+            progressionslot.delete()
 
     def close_gap(self, gap):
         for slot in self.progressionslots.all():
@@ -175,6 +201,7 @@ class ProgressionSlot(models.Model):
         related_name='progressionslots',
         db_column="progression")
     _order = models.IntegerField(default=1, db_column="order")
+    _current = models.BooleanField(default=False, db_column="current")
 
     @property
     def order(self):
@@ -210,3 +237,19 @@ class ProgressionSlot(models.Model):
         except ValueError:
             pass
         self._progression = progression
+
+    @property
+    def current(self):
+        return self._current
+
+    @current.setter
+    def current(self, value):
+        if value is False:
+            self._current = False
+        else:
+            previous = self.progression.progressionslots.filter(
+                _current=True).first()
+            if previous:
+                previous.current = False
+                previous.save()
+            self._current = value
