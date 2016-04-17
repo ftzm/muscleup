@@ -242,27 +242,14 @@ class RoutineDaySlotModelTest(TestCase):
     """todo"""
 
     def setUp(self):
-        first_routine = Routine()
-        first_routine.name = "Routine One"
-        first_routine.cycle_length = 7
-        first_routine.cycle_position = 1
-        first_routine.cycle_last_set = \
-            datetime.date.today() - datetime.timedelta(1)
-        first_routine.save()
-        first_routineday = RoutineDay()
-        first_routineday.name = "RoutineDay One"
-        first_routineday.routine = Routine.objects.get(name="Routine One")
-        first_routineday.position = 3
-        first_routineday.save()
-        first_exercise = Exercise()
-        first_exercise.name = "Pushup"
-        first_exercise.save()
-        second_exercise = Exercise()
-        second_exercise.name = "Plank"
-        second_exercise.save()
-        second_exercise = Exercise()
-        second_exercise.name = "Squat"
-        second_exercise.save()
+        routine = Routine.objects.create(name="Routine One", cycle_length=7, \
+            cycle_position=1, cycle_last_set=datetime.date.today() - \
+            datetime.timedelta(1))
+        RoutineDay.objects.create(name="RoutineDay One", routine=routine,
+                                  position=3)
+        Exercise.objects.create(name="Pushup")
+        Exercise.objects.create(name="Plank")
+        Exercise.objects.create(name="Squat")
 
     def test_saving_and_retrieving_routinedayslot(self):
         first_routinedayslot = RoutineDaySlot()
@@ -352,6 +339,22 @@ class RoutineDaySlotModelTest(TestCase):
 
         self.assertEqual(second_routinedayslot.order, 1)
         self.assertEqual(third_routinedayslot.order, 2)
+
+
+    def test_add_progression_to_slot(self):
+        progression = Progression.objects.create(name="Handstand")
+        ProgressionSlot.objects.create(
+            progression=Progression.objects.get(name="Handstand"),
+            exercise=Exercise.objects.get(name="Plank"),
+            current=True)
+        ProgressionSlot.objects.create(
+            progression=Progression.objects.get(name="Handstand"),
+            exercise=Exercise.objects.get(name="Pushup"))
+
+        RoutineDaySlot.objects.create(progression=progression)
+        routinedayslot = RoutineDaySlot.objects.all().first()
+
+        self.assertEqual(routinedayslot.exercise.name, "Plank")
 
 
 class ProgressionModelTest(TestCase):
@@ -477,7 +480,8 @@ class ProgressionSlotModelTest(TestCase):
     def test_set_current(self):
         progression = Progression.objects.first()
         progressionslots = [ProgressionSlot.objects.create(
-            exercise=e, progression=progression) for e in Exercise.objects.all()]
+            exercise=e, progression=progression)
+                            for e in Exercise.objects.all()]
 
         progressionslots[1].current = True
         progressionslots[1].save()
@@ -488,7 +492,8 @@ class ProgressionSlotModelTest(TestCase):
     def test_only_one_current(self):
         progression = Progression.objects.first()
         progressionslots = [ProgressionSlot.objects.create(
-            exercise=e, progression=progression) for e in Exercise.objects.all()]
+            exercise=e, progression=progression)
+                            for e in Exercise.objects.all()]
         progressionslots[0].current = True
         progressionslots[0].save()
         self.assertTrue(progressionslots[0].current)
@@ -496,9 +501,8 @@ class ProgressionSlotModelTest(TestCase):
         progressionslots[1].current = True
         progressionslots[1].save()
 
-        progressionslots = progression.progressionslots.all()
-        self.assertFalse(progressionslots[0].current)
-        self.assertTrue(progressionslots[1].current)
+        self.assertEqual(ProgressionSlot.objects.
+                         filter(_current=True).count(), 1)
 
 class WorkoutModelTest(TestCase):
 
