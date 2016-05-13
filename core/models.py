@@ -172,6 +172,16 @@ class RoutineDay(models.Model):
                 slot.save()
 
 
+class Upgrade(models.Model):
+    name = models.TextField()
+    main_reps_adj = models.IntegerField(default=0)
+    main_weight_adj = models.IntegerField(default=0)
+    main_sets_adj = models.IntegerField(default=0)
+    snd_reps_adj = models.IntegerField(default=0)
+    snd_weight_adj = models.IntegerField(default=0)
+    snd_sets_adj = models.IntegerField(default=0)
+
+
 class RoutineDaySlot(models.Model):
     """
     relationship model between routineday and exercise,
@@ -187,6 +197,14 @@ class RoutineDaySlot(models.Model):
     _order = models.IntegerField(default=1, db_column="order")
     progression = models.ForeignKey(
         Progression, null=True, on_delete=models.CASCADE)
+    upgrade = models.ForeignKey(
+        Upgrade, null=True)
+    main_reps_goal = models.IntegerField(default=0)
+    main_weight_goal = models.IntegerField(default=0)
+    main_sets_goal = models.IntegerField(default=0)
+    snd_reps_goal = models.IntegerField(default=0)
+    snd_weight_goal = models.IntegerField(default=0)
+    snd_sets_goal = models.IntegerField(default=0)
 
     @property
     def order(self):
@@ -256,6 +274,29 @@ class Workout(models.Model):
 
     objects = WorkoutManager()
 
+    def upgrade_exercises(self):
+        slots = self.routineday.routinedayslots.all()
+        for slot in slots:
+            sets = [s for s in self.sets.all()
+                    if s.exercise == slot.exercise]
+            if len(sets) >= slot.main_sets_goal and \
+                min([s.weight for s in sets]) >= slot.main_weight_goal and \
+                min([s.reps for s in sets]) >= slot.main_sets_goal:
+                slot.main_sets_goal += slot.upgrade.main_sets_adj
+                slot.main_reps_goal += slot.upgrade.main_reps_adj
+                slot.main_weight_goal += slot.upgrade.main_weight_adj
+                slot.save()
+            elif len(sets) >= slot.snd_sets_goal and \
+                min([s.weight for s in sets]) >= slot.snd_weight_goal and \
+                min([s.reps for s in sets]) >= slot.snd_sets_goal:
+                slot.snd_sets_goal += slot.upgrade.snd_sets_adj
+                slot.snd_reps_goal += slot.upgrade.snd_reps_adj
+                slot.snd_weight_goal += slot.upgrade.snd_weight_adj
+                slot.save()
+            else:
+                continue
+
+
 class Set(models.Model):
     exercise = models.ForeignKey(
         Exercise, default=1, on_delete=models.CASCADE,
@@ -265,5 +306,4 @@ class Set(models.Model):
     workout = models.ForeignKey(
         Workout, default=1, on_delete=models.CASCADE,
         related_name='sets')
-
 

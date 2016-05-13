@@ -11,6 +11,7 @@ from core.models import RoutineDay
 from core.models import RoutineDaySlot
 from core.models import Progression
 from core.models import ProgressionSlot
+from core.models import Upgrade
 
 # importing the signals module gets it running automatically
 # complains of being unused since it isn't used explicitly
@@ -356,6 +357,23 @@ class RoutineDaySlotModelTest(TestCase):
 
         self.assertEqual(routinedayslot.exercise.name, "Plank")
 
+    def test_exercise_updates_with_progression(self):
+        progression = Progression.objects.create(name="Handstand")
+        ProgressionSlot.objects.create(
+            progression=Progression.objects.get(name="Handstand"),
+            exercise=Exercise.objects.get(name="Plank"),
+            current=True)
+        ProgressionSlot.objects.create(
+            progression=Progression.objects.get(name="Handstand"),
+            exercise=Exercise.objects.get(name="Pushup"))
+        RoutineDaySlot.objects.create(progression=progression)
+        routinedayslot = RoutineDaySlot.objects.all().first()
+
+        pushup = ProgressionSlot.objects.get(exercise__name="Pushup")
+        pushup.current = True
+        pushup.save()
+
+        self.assertEqual(routinedayslot.exercise.name, "Pushup")
 
 class ProgressionModelTest(TestCase):
 
@@ -607,3 +625,53 @@ class ExerciseWorkoutSetTest(TestCase):
 
         todays_sets = Set.objects.filter(workout__date=datetime.date.today())
         self.assertEqual(todays_sets.count(), 24)
+
+class UpgradeModelTest(TestCase):
+    def setUp(self):
+        exercise = Exercise.objects.create(name="Bench")
+        routine = Routine.objects.create(name="Stronglifts")
+        routineday = RoutineDay.objects.create(name="A", routine=routine)
+        RoutineDaySlot.objects.create(routineday=routineday, \
+            main_reps_goal=5, main_weight_goal=50, main_sets_goal=5, \
+            snd_reps_goal=20, snd_weight_goal=0, snd_sets_goal=0, \
+            exercise=exercise)
+
+    def test_saving_and_retrieving_upgrade(self):
+        Upgrade.objects.create(name="Stronglifts")
+
+        self.assertEqual(Upgrade.objects.count(), 1)
+        self.assertEqual(Upgrade.objects.first().name, "Stronglifts")
+
+    def test_upgrade_exercise_main(self):
+        exercise = Exercise.objects.first()
+        upgrade = Upgrade.objects.create(name="Stronglifts", main_weight_adj=5)
+        routineday = RoutineDay.objects.first()
+        routinedayslot = RoutineDaySlot.objects.first()
+        routinedayslot.upgrade = upgrade
+        routinedayslot.save()
+        workout = Workout.objects.create_workout(routineday=routineday)
+        for _ in range(5):
+            Set.objects.create(exercise=exercise, reps=5, weight=50,
+                               workout=workout)
+
+        workout.upgrade_exercises()
+        routinedayslot = RoutineDaySlot.objects.first()
+
+        self.assertEqual(routinedayslot.main_weight_goal, 55)
+
+    def test_upgrade_exercise_snd(self):
+        exercise = Exercise.objects.first()
+        upgrade = Upgrade.objects.create(name="Stronglifts", snd_reps_adj=1)
+        routineday = RoutineDay.objects.first()
+        routinedayslot = RoutineDaySlot.objects.first()
+        routinedayslot.upgrade = upgrade
+        routinedayslot.save()
+        workout = Workout.objects.create_workout(routineday=routineday)
+        for _ in range(5):
+            Set.objects.create(exercise=exercise, reps=20, weight=49,
+                               workout=workout)
+
+        workout.upgrade_exercises()
+        routinedayslot = RoutineDaySlot.objects.first()
+
+        self.assertEqual(routinedayslot.snd_reps_goal, 21)
