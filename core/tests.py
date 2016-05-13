@@ -21,6 +21,8 @@ import core.signals  # pylint: disable=unused-import
 def create_user():
     return MuscleupUser.objects.create_user('guy@test.com', 'passward')
 
+def get_user():
+    return MuscleupUser.objects.first()
 
 class UserModelTest(TestCase):
     def setUp(self):
@@ -30,18 +32,19 @@ class UserModelTest(TestCase):
         self.assertEqual(MuscleupUser.objects.count(), 1)
         self.assertEqual(MuscleupUser.objects.first().email, "guy@test.com")
 
+    def test_verify_password(self):
+        self.assertTrue(MuscleupUser.objects.first().check_password('passward'))
+
 class ExerciseModelTest(TestCase):
+    def setUp(self):
+        create_user()
 
     def test_saving_and_retrieving_exercises(self):
-        first_exercise = Exercise()
-        first_exercise.name = "Pushup"
-        first_exercise.save()
+        user = get_user()
+        Exercise.objects.create(name="Pushup", owner=user)
+        Exercise.objects.create(name="Pullup", owner=user)
 
-        second_exercise = Exercise()
-        second_exercise.name = "Pullup"
-        second_exercise.save()
-
-        saved_exercises = Exercise.objects.all()
+        saved_exercises = user.exercises.all()
         self.assertEqual(saved_exercises.count(), 2)
 
         first_saved_exercise = saved_exercises[0]
@@ -53,25 +56,20 @@ class ExerciseModelTest(TestCase):
 class SetModelTest(TestCase):
 
     def setUp(self):
-        Exercise.objects.create(name="Pushup")
-        Exercise.objects.create(name="Pullup")
-        Workout.objects.create(name="Bodyweight A")
-        Workout.objects.create(name="Bodyweight B")
+        user = create_user()
+        Exercise.objects.create(name="Pushup", owner=user)
+        Exercise.objects.create(name="Pullup", owner=user)
+        Workout.objects.create(name="Bodyweight A", owner=user)
+        Workout.objects.create(name="Bodyweight B", owner=user)
 
     def test_saving_and_retrieving_sets(self):
-        first_set = Set()
-        first_set.reps = 10
-        first_set.weight = 10
-        first_set.exercise = Exercise.objects.get(name="Pushup")
-        first_set.workout = Workout.objects.get(name="Bodyweight A")
-        first_set.save()
-
-        second_set = Set()
-        second_set.reps = 9
-        second_set.weight = 9
-        second_set.exercise = Exercise.objects.get(name="Pullup")
-        second_set.workout = Workout.objects.get(name="Bodyweight B")
-        second_set.save()
+        user = get_user()
+        Set.objects.create(owner=user, reps=10, weight=10,
+                           exercise=Exercise.objects.get(name="Pushup"),
+                           workout=Workout.objects.get(name="Bodyweight A"))
+        Set.objects.create(owner=user, reps=9, weight=9,
+                           exercise=Exercise.objects.get(name="Pullup"),
+                           workout=Workout.objects.get(name="Bodyweight B"))
 
         saved_sets = Set.objects.all()
         self.assertEqual(saved_sets.count(), 2)

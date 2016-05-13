@@ -42,6 +42,8 @@ class MuscleupUser(AbstractBaseUser):
 
 class Exercise(models.Model):
     name = models.TextField(default="")
+    owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
+                              related_name='exercises')
 
 
 class Routine(models.Model):
@@ -52,6 +54,8 @@ class Routine(models.Model):
     _cycle_position = models.IntegerField(
         default=1, db_column="cycle_position")
     cycle_last_set = models.DateField(default=timezone.now)
+    owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
+                              related_name='routines')
 
     def update_cycle_position(self):
         self.cycle_position = self.cycle_position + \
@@ -86,6 +90,8 @@ class Routine(models.Model):
 
 class Progression(models.Model):
     name = models.TextField(default="")
+    owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
+                              related_name='progressions')
 
     def add_exercise(self, exercise):
         ProgressionSlot.objects.create(
@@ -119,6 +125,8 @@ class ProgressionSlot(models.Model):
         db_column="progression")
     _order = models.IntegerField(default=1, db_column="order")
     _current = models.BooleanField(default=False, db_column="current")
+    owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
+                              related_name='progressionslots')
 
     @property
     def order(self):
@@ -178,6 +186,8 @@ class RoutineDay(models.Model):
         related_name='routinedays')
     _position = models.IntegerField(
         default=1, db_column="position")
+    owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
+                              related_name='routinedays')
 
     @property
     def position(self):
@@ -215,6 +225,8 @@ class Upgrade(models.Model):
     snd_reps_adj = models.IntegerField(default=0)
     snd_weight_adj = models.IntegerField(default=0)
     snd_sets_adj = models.IntegerField(default=0)
+    owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
+                              related_name='upgrades')
 
 
 class RoutineDaySlot(models.Model):
@@ -240,6 +252,8 @@ class RoutineDaySlot(models.Model):
     snd_reps_goal = models.IntegerField(default=0)
     snd_weight_goal = models.IntegerField(default=0)
     snd_sets_goal = models.IntegerField(default=0)
+    owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
+                              related_name='routinedayslots')
 
     @property
     def order(self):
@@ -306,6 +320,8 @@ class Workout(models.Model):
     routineday = models.ForeignKey(
         RoutineDay, null=True, on_delete=models.CASCADE,
         related_name='workouts')
+    owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
+                              related_name='workouts')
 
     objects = WorkoutManager()
 
@@ -341,4 +357,6 @@ class Set(models.Model):
     workout = models.ForeignKey(
         Workout, default=1, on_delete=models.CASCADE,
         related_name='sets')
+    owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
+                              related_name='sets')
 
