@@ -1,8 +1,43 @@
 """models for muscleup core"""
 
 import datetime
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
+
+
+class MuscleupUserManager(BaseUserManager):
+
+    def create_user(self, email, password):
+        user = self.model(email=self.normalize_email(email))
+
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password):
+        self.create_user(email, password)
+
+
+class MuscleupUser(AbstractBaseUser):
+    email = models.EmailField(unique=True)
+    nick = models.CharField(max_length=30)
+    USERNAME_FIELD = 'email'
+    REQUIREd_FIELDS = []
+
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def get_full_name(self):
+        return self.name
+
+    @property
+    def get_short_name(self):
+        return self.name
+
+    objects = MuscleupUserManager()
 
 
 class Exercise(models.Model):

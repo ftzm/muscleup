@@ -3,6 +3,7 @@
 
 import datetime
 from django.test import TestCase
+from core.models import MuscleupUser
 from core.models import Set
 from core.models import Exercise
 from core.models import Workout
@@ -17,6 +18,17 @@ from core.models import Upgrade
 # complains of being unused since it isn't used explicitly
 import core.signals  # pylint: disable=unused-import
 
+def create_user():
+    return MuscleupUser.objects.create_user('guy@test.com', 'passward')
+
+
+class UserModelTest(TestCase):
+    def setUp(self):
+        create_user()
+
+    def test_create_user(self):
+        self.assertEqual(MuscleupUser.objects.count(), 1)
+        self.assertEqual(MuscleupUser.objects.first().email, "guy@test.com")
 
 class ExerciseModelTest(TestCase):
 
