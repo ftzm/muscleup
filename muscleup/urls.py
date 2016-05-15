@@ -15,17 +15,20 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from rest_framework import routers
+from rest_framework_nested import routers
 from core import views
 
-#API Router
-router = routers.DefaultRouter()
-router.register(r'exercises', views.ExerciseViewSet, 'exercises')
+#rest_framework_rested router
+router = routers.SimpleRouter()
 router.register(r'routines', views.RoutineViewSet, 'routines')
 router.register(r'routinedays', views.RoutineDayViewSet, 'routinedays')
+routines_router = routers.NestedSimpleRouter(router, r'routines', lookup='routines')
+routines_router.register(r'routinedays', views.RoutineDayViewSet, 'routinedays')
+router.register(r'exercises', views.ExerciseViewSet, 'exercises')
 
 urlpatterns = [
     url(r'^api-v1/', include(router.urls)),
+    url(r'^api-v1/', include(routines_router.urls)),
     url(r'^admin/', admin.site.urls),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
