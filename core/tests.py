@@ -71,7 +71,7 @@ class SetModelTest(TestCase):
                            exercise=Exercise.objects.get(name="Pullup"),
                            workout=Workout.objects.get(name="Bodyweight B"))
 
-        saved_sets = Set.objects.all()
+        saved_sets = user.sets.all()
         self.assertEqual(saved_sets.count(), 2)
 
         first_saved_set = saved_sets[0]
@@ -89,19 +89,18 @@ class SetModelTest(TestCase):
 class RoutineModelTest(TestCase):
     """todo"""
 
+    def setUp(self):
+        create_user()
+
     def test_saving_and_retrieving_routine(self):
-        first_routine = Routine()
-        first_routine.name = "Routine One"
-        first_routine.save()
+        user = get_user()
+        Routine.objects.create(owner=user, name="Routine One")
+        r2 = Routine.objects.create(owner=user, name="Routine Two", \
+            cycle_length=7, cycle_last_set=datetime.date.today())
+        r2.cycle_position = 2
+        r2.save()
 
-        second_routine = Routine()
-        second_routine.name = "Routine Two"
-        second_routine.cycle_length = 7
-        second_routine.cycle_position = 2
-        second_routine.cycle_last_set = datetime.date.today()
-        second_routine.save()
-
-        saved_routines = Routine.objects.all()
+        saved_routines = user.routines.all()
         self.assertEqual(saved_routines.count(), 2)
 
         first_saved_routine = saved_routines[0]
@@ -114,10 +113,8 @@ class RoutineModelTest(TestCase):
                          datetime.date.today())
 
     def test_no_invalid_cycle_position(self):
-        first_routine = Routine()
-        first_routine.name = "Routine One"
-        first_routine.cycle_length = 7
-        first_routine.save()
+        first_routine = Routine.objects.create(name="Routine One", \
+            cycle_length=7)
 
         first_routine.cycle_position = 8
         first_routine.save()

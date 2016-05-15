@@ -21,7 +21,7 @@ class MuscleupUserManager(BaseUserManager):
 
 class MuscleupUser(AbstractBaseUser):
     email = models.EmailField(unique=True)
-    nick = models.CharField(max_length=30)
+    nick = models.CharField(max_length=30, default="Champ")
     USERNAME_FIELD = 'email'
     REQUIREd_FIELDS = []
 
@@ -41,7 +41,7 @@ class MuscleupUser(AbstractBaseUser):
 
 
 class Exercise(models.Model):
-    name = models.TextField(default="")
+    name = models.TextField(default="", unique=True)
     owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
                               related_name='exercises')
 
