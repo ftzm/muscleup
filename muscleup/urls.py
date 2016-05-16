@@ -15,20 +15,25 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from rest_framework_nested import routers
 from core import views
 
-#rest_framework_rested router
-router = routers.SimpleRouter()
-router.register(r'routines', views.RoutineViewSet, 'routines')
-router.register(r'routinedays', views.RoutineDayViewSet, 'routinedays')
-routines_router = routers.NestedSimpleRouter(router, r'routines', lookup='routines')
-routines_router.register(r'routinedays', views.RoutineDayViewSet, 'routinedays')
-router.register(r'exercises', views.ExerciseViewSet, 'exercises')
+api_v1_patterns = [
+    url(r'^progressions/$', views.ProgressionList.as_view()),
+    url(r'^progressions/(?P<pk>[0-9]+)/$',
+        views.ProgressionDetail.as_view(),
+        name='progressions-detail'),
+    url(r'^progressions/(?P<progression_pk>[0-9]+)/progressionslots/$',
+        views.ProgressionSlotList.as_view(),
+        name='progressions-progressionslots-list'),
+    url(r'^progressions/(?P<progression_pk>[0-9]+)/progressionslots/' \
+         '(?P<pk>[0-9]+)/',
+        views.ProgressionSlotDetail.as_view(),
+        name='progressions-progressionslots-detail'),
+]
 
 urlpatterns = [
-    url(r'^api-v1/', include(router.urls)),
-    url(r'^api-v1/', include(routines_router.urls)),
+    url(r'^api-v1/', include(api_v1_patterns)),
     url(r'^admin/', admin.site.urls),
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+    url(r'^api-auth/', include('rest_framework.urls',
+                               namespace='rest_framework')),
 ]

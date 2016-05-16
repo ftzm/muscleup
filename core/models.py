@@ -57,6 +57,9 @@ class Routine(models.Model):
     owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
                               related_name='routines')
 
+    def __str__(self):
+        return 'Routine "{}"'.format(self.name)
+
     def update_cycle_position(self):
         self.cycle_position = self.cycle_position + \
             (datetime.date.today() - self.cycle_last_set).days \
@@ -189,6 +192,9 @@ class RoutineDay(models.Model):
     owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
                               related_name='routinedays')
 
+    def __str__(self):
+        return 'RoutineDay "{}"'.format(self.name)
+
     @property
     def position(self):
         return self._position
@@ -302,15 +308,20 @@ class RoutineDaySlot(models.Model):
         self._exercise = exercise
 
 class WorkoutManager(models.Manager): #pylint: disable=too-few-public-methods
-    def create_workout(self, routineday=None):
-        if routineday is not None:
-            previous = Workout.objects.filter(routineday=routineday).count()
-            name = "{} - {} - {}".format(
-                routineday.routine.name, routineday.name, previous+1)
-        else:
-            previous = Workout.objects.filter(routineday__isnull=True).count()
-            name = "Untitled - {}".format(previous+1)
-        workout = self.create(routineday=routineday, name=name)
+    def create_workout(self, routineday=None, date=None, name=None, owner=None):
+        if name is None:
+            if routineday is not None:
+                previous = Workout.objects.filter(routineday=routineday).count()
+                name = "{} - {} - {}".format(
+                    routineday.routine.name, routineday.name, previous+1)
+            else:
+                previous = Workout.objects.filter(
+                    routineday__isnull=True).count()
+                name = "Untitled - {}".format(previous+1)
+        if date is None:
+            date = datetime.date.today()
+
+        workout = self.create(routineday=routineday, name=name, date=date, owner=owner)
         return workout
 
 
