@@ -18,6 +18,14 @@ from django.contrib import admin
 from core import views
 
 api_v1_patterns = [
+    url(r'^exercises/$', views.ExerciseList.as_view()),
+    url(r'^exercises/(?P<pk>[0-9]+)/$',
+        views.ExerciseDetail.as_view(),
+        name='exercises-detail'),
+    url(r'^workouts/$', views.WorkoutList.as_view()),
+    url(r'^workouts/(?P<pk>[0-9]+)/$',
+        views.WorkoutDetail.as_view(),
+        name='workouts-detail'),
     url(r'^progressions/$', views.ProgressionList.as_view()),
     url(r'^progressions/(?P<pk>[0-9]+)/$',
         views.ProgressionDetail.as_view(),
@@ -29,6 +37,17 @@ api_v1_patterns = [
          '(?P<pk>[0-9]+)/',
         views.ProgressionSlotDetail.as_view(),
         name='progressions-progressionslots-detail'),
+    url(r'^routines/$', views.RoutineList.as_view()),
+    url(r'^routines/(?P<pk>[0-9]+)/$',
+        views.RoutineDetail.as_view(),
+        name='routines-detail'),
+    url(r'^routines/(?P<routine_pk>[0-9]+)/routinedays/$',
+        views.RoutineDayList.as_view(),
+        name='routines-routineslots-list'),
+    url(r'^routines/(?P<routine_pk>[0-9]+)/routinedays/' \
+         '(?P<pk>[0-9]+)/',
+        views.RoutineDayDetail.as_view(),
+        name='routines-routinedays-detail'),
 ]
 
 urlpatterns = [

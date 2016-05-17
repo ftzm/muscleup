@@ -3,14 +3,12 @@
 Website and API views for muscleup
 """
 from django.http import Http404
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import viewsets, mixins, generics
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route, list_route
 from django.shortcuts import render, get_object_or_404
-from rest_framework_extensions.mixins import NestedViewSetMixin
 from core.models import (
     Exercise,
     Routine,
@@ -35,6 +33,20 @@ class OwndedDetailView(generics.RetrieveUpdateDestroyAPIView):
         user = self.request.user
         return self.query_model.objects.filter(owner=user)
 
+class OwndedListView(generics.ListCreateAPIView):
+    query_model = None
+
+    def get_queryset(self):
+        user = self.request.user
+        return self.query_model.objects.filter(owner=user)
+
+class ExerciseList(OwndedListView):
+    """
+    API endpoint that allows exercises to be viewed or edited
+    """
+    query_model = Exercise
+    serializer_class = ExerciseSerializer
+
 class ExerciseDetail(OwndedDetailView):
     """
     API endpoint that allows exercises to be viewed or edited
@@ -42,24 +54,26 @@ class ExerciseDetail(OwndedDetailView):
     query_model = Exercise
     serializer_class = ExerciseSerializer
 
-class WorkoutViewSet(OwnedModelViewSet):
+class WorkoutList(OwndedListView):
     """
     API endpoint that allows workouts to be viewed or edited
     """
     query_model = Workout
     serializer_class = WorkoutSerializer
 
-class ProgressionList(generics.ListCreateAPIView):
-    serializer_class = ProgressionSerializer
+class WorkoutDetail(OwndedDetailView):
+    """
+    API endpoint that allows workouts to be viewed or edited
+    """
+    query_model = Workout
+    serializer_class = WorkoutSerializer
 
-    def get_queryset(self):
-        user = self.request.user
-        return Progression.objects.filter(owner=user)
+class ProgressionList(OwndedListView):
+    serializer_class = ProgressionSerializer
+    query_model = Progression
 
 class ProgressionDetail(OwndedDetailView):
-    """
-    Retrieve, update or delete a progression instance.
-    """
+    """Retrieve, update or delete a progression instance"""
     serializer_class = ProgressionSerializer
     query_model = Progression
 
@@ -85,3 +99,35 @@ class ProgressionSlotDetail(generics.RetrieveUpdateDestroyAPIView):
         progression = Progression.objects.get(pk=self.kwargs['progression_pk'],
                                               owner=user)
         return progression.progressionslots.all()
+
+class RoutineList(OwndedListView):
+    serializer_class = RoutineSerializer
+    query_model = Routine
+
+class RoutineDetail(OwndedDetailView):
+    """Retrieve, update or delete a routine instance"""
+    serializer_class = RoutineSerializer
+    query_model = Routine
+
+class RoutineDayList(generics.ListCreateAPIView):
+    # queryset = RoutineDay.objects.all()
+    serializer_class = RoutineDaySerializer
+
+    def get_queryset(self):
+        routine = Routine.objects.get(pk=self.kwargs['routine_pk'],
+                                              owner=self.request.user)
+        return routine.routinedays.all()
+
+    def perform_create(self, serializer):
+        routine = Routine.objects.get(pk=self.kwargs['routine_pk'],
+                                              owner=self.request.user)
+        serializer.save(routine=routine, owner=self.request.user)
+
+class RoutineDayDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = RoutineDaySerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        routine = Routine.objects.get(pk=self.kwargs['routine_pk'],
+                                              owner=user)
+        return routine.routinedays.all()

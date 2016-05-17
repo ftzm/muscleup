@@ -52,6 +52,28 @@ class ExerciseSerializer(serializers.ModelSerializer):
             'url': {'view_name': 'exercises-detail'}
             }
 
+class RoutineDayHyperlink(serializers.HyperlinkedRelatedField):
+    view_name = 'routines-routinedays-detail'
+
+    # Override internal method to disable use of PKOnlyObject which
+    # so get_url() can access actual instance attributes
+    def use_pk_only_optimization(self):
+        return False
+
+    def get_url(self, obj, view_name, request, format):
+        url_kwargs = {
+            'routine_pk': obj.routine.pk,
+            'pk': obj.pk
+        }
+        return reverse(view_name, kwargs=url_kwargs, request=request, format=format)
+
+    def get_object(self, view_name, view_args, view_kwargs):
+        lookup_kwargs = {
+           'routine__pk': view_kwargs['routine_pk'],
+           'pk': view_kwargs['pk']
+        }
+        return self.get_queryset().get(**lookup_kwargs)
+
 class RoutineDaySerializer(serializers.HyperlinkedModelSerializer):
 
     position = serializers.IntegerField()
@@ -71,13 +93,7 @@ class RoutineDaySerializer(serializers.HyperlinkedModelSerializer):
 class RoutineSerializer(serializers.HyperlinkedModelSerializer):
     cycle_length = serializers.IntegerField()
     cycle_position = serializers.IntegerField()
-    routinedays = NestedHyperlinkedRelatedField(
-        many=True,
-        read_only=True,
-        view_name='routinedays-detail',
-        parent_lookup_field = 'routine',
-        parent_lookup_url_kwarg='routines_pk'
-    )
+    routinedays = RoutineDayHyperlink(many=True, read_only=True)
 
     class Meta:
         model = Routine
@@ -93,40 +109,12 @@ class RoutineSerializer(serializers.HyperlinkedModelSerializer):
             'url': {'view_name': 'routines-detail'}
             }
 
-class RoutineDayHyperlink(serializers.HyperlinkedRelatedField):
-    """
-    Custom field for linking to RoutineDay
-    """
-
-    # We define these as class attributes, so we don't need to pass them as arguments.
-    view_name = 'routines-routineday-detail'
-    queryset = RoutineDay.objects.all()
-
-    def get_url(self, obj, view_name, request, format):
-        url_kwargs = {
-            'routine_pk': obj.routine.pk,
-            'pk': obj.pk
-        }
-        return reverse(view_name, kwargs=url_kwargs, request=request, format=format)
-
-    # def get_object(self, view_name, view_args, view_kwargs):
-    #     lookup_kwargs = {
-    #        'organization__slug': view_kwargs['organization_slug'],
-    #        'pk': view_kwargs['customer_pk']
-    #     }
-    #     return self.get_queryset().get(**lookup_kwargs)
-
 class WorkoutSerializer(FilterRelatedMixin, serializers.ModelSerializer):
     name = serializers.CharField(required=False)
     date = serializers.DateField(required=False)
     owner = serializers.PrimaryKeyRelatedField(
         queryset = MuscleupUser.objects.all())
-    routineday = RoutineDayHyperlink()
-    #     view_name='routinedays-detail',
-    #     parent_lookup_field = 'routine',
-    #     parent_lookup_url_kwarg='routines_pk'
-    # )
-
+    routineday = RoutineDayHyperlink(queryset=RoutineDay.objects.all())
 
     class Meta:
         model = Exercise
@@ -134,8 +122,8 @@ class WorkoutSerializer(FilterRelatedMixin, serializers.ModelSerializer):
                   'id',
                   'name',
                   'date',
-                  'routineday',
-                  'owner'
+                  'owner',
+                  'routineday'
                  ]
         extra_kwargs = {
             'url': {'view_name': 'workouts-detail'}
@@ -148,10 +136,8 @@ class WorkoutSerializer(FilterRelatedMixin, serializers.ModelSerializer):
         request = self.context['request']
         return queryset.filter(owner=request.user)
 
-class ProgressionSlotListHyperlink(serializers.HyperlinkedRelatedField):
-    # We define these as class attributes, so we don't need to pass them as arguments
+class ProgressionSlotHyperlink(serializers.HyperlinkedRelatedField):
     view_name = 'progressions-progressionslots-detail'
-    # queryset = ProgressionSlot.objects.all()
 
     def get_url(self, obj, view_name, request, format):
         url_kwargs = {
@@ -162,14 +148,14 @@ class ProgressionSlotListHyperlink(serializers.HyperlinkedRelatedField):
 
     def get_object(self, view_name, view_args, view_kwargs):
         lookup_kwargs = {
-           'routine__pk': view_kwargs['progression_pk'],
+           'progression__pk': view_kwargs['progression_pk'],
            'pk': view_kwargs['pk']
         }
         return self.get_queryset().get(**lookup_kwargs)
 
 class ProgressionSerializer(serializers.ModelSerializer):
 
-    progressionslots = ProgressionSlotListHyperlink(many=True, read_only=True)
+    progressionslots = ProgressionSlotHyperlink(many=True, read_only=True)
 
     class Meta:
         model = Progression
