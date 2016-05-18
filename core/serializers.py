@@ -10,7 +10,8 @@ from core.models import (
     RoutineDaySlot,
     Progression,
     ProgressionSlot,
-    MuscleupUser
+    MuscleupUser,
+    Set,
     )
 from rest_framework_nested.relations import NestedHyperlinkedRelatedField
 
@@ -175,3 +176,17 @@ class ProgressionSlotSerializer(serializers.ModelSerializer):
         model = ProgressionSlot
         fields = ['id', 'exercise', '_progression']
 
+class SetSerializer(serializers.ModelSerializer):
+    exercise = serializers.PrimaryKeyRelatedField(
+        queryset=Exercise.objects.all(),
+        )
+    workout = serializers.PrimaryKeyRelatedField(
+        queryset=Workout.objects.all(),
+        )
+
+    class Meta:
+        model = Set
+        fields = ['url', 'id', 'exercise', 'reps', 'weight', 'workout']
+        extra_kwargs = {
+            'url': {'view_name': 'sets-detail'}
+            }

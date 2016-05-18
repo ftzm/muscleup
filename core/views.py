@@ -15,7 +15,8 @@ from core.models import (
     RoutineDay,
     Workout,
     Progression,
-    ProgressionSlot
+    ProgressionSlot,
+    Set,
     )
 from core.serializers import (
     ExerciseSerializer,
@@ -23,7 +24,8 @@ from core.serializers import (
     RoutineDaySerializer,
     WorkoutSerializer,
     ProgressionSerializer,
-    ProgressionSlotSerializer
+    ProgressionSlotSerializer,
+    SetSerializer,
     )
 
 class OwndedDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -67,6 +69,20 @@ class WorkoutDetail(OwndedDetailView):
     """
     query_model = Workout
     serializer_class = WorkoutSerializer
+
+class SetList(OwndedListView):
+    """
+    API endpoint that allows workouts to be viewed or edited
+    """
+    query_model = Set
+    serializer_class = SetSerializer
+
+class SetDetail(OwndedDetailView):
+    """
+    API endpoint that allows workouts to be viewed or edited
+    """
+    query_model = Set
+    serializer_class = SetSerializer
 
 class ProgressionList(OwndedListView):
     serializer_class = ProgressionSerializer
