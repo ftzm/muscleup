@@ -176,17 +176,27 @@ class ProgressionSlotSerializer(serializers.ModelSerializer):
         model = ProgressionSlot
         fields = ['id', 'exercise', '_progression']
 
-class SetSerializer(serializers.ModelSerializer):
-    exercise = serializers.PrimaryKeyRelatedField(
+class SetSerializer(FilterRelatedMixin, serializers.ModelSerializer):
+    exercise = serializers.HyperlinkedRelatedField(
         queryset=Exercise.objects.all(),
+        view_name='exercises-detail',
         )
-    workout = serializers.PrimaryKeyRelatedField(
+    workout = serializers.HyperlinkedRelatedField(
         queryset=Workout.objects.all(),
+        view_name='workouts-detail',
         )
 
     class Meta:
         model = Set
-        fields = ['url', 'id', 'exercise', 'reps', 'weight', 'workout']
+        fields = ['id', 'url', 'exercise', 'workout', 'reps', 'weight']
         extra_kwargs = {
             'url': {'view_name': 'sets-detail'}
             }
+
+    def filter_exercise(self, queryset):
+        request = self.context['request']
+        return queryset.filter(owner=request.user)
+
+    def filter_workout(self, queryset):
+        request = self.context['request']
+        return queryset.filter(owner=request.user)
