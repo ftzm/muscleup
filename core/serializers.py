@@ -27,6 +27,7 @@ class FilterRelatedMixin(object):
     where "routineday" matches the name of the field to be filtered.
 
     """
+
     def __init__(self, *args, **kwargs):
         super(FilterRelatedMixin, self).__init__(*args, **kwargs)
         for name, field in self.fields.items():
@@ -40,6 +41,17 @@ class FilterRelatedMixin(object):
                 else:
                     field.queryset = func(field.queryset)
 
+class FilterUserRelatedMixin(object):
+
+    def __init__(self, *args, **kwargs):
+        super(FilterUserRelatedMixin, self).__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            if isinstance(field, serializers.RelatedField):
+                try:
+                    request = self.context['request']
+                    field.queryset = field.queryset.filter(owner=request.user)
+                except AttributeError:
+                    pass
 
 class ExerciseSerializer(serializers.ModelSerializer):
     class Meta:
@@ -165,7 +177,8 @@ class ProgressionSerializer(serializers.ModelSerializer):
             'url': {'view_name': 'progressions-detail'}
             }
 
-class ProgressionSlotSerializer(serializers.ModelSerializer):
+class ProgressionSlotSerializer(FilterUserRelatedMixin,
+                                serializers.ModelSerializer):
     _progression = serializers.PrimaryKeyRelatedField(
         read_only=True)
     exercise = serializers.PrimaryKeyRelatedField(
@@ -176,7 +189,7 @@ class ProgressionSlotSerializer(serializers.ModelSerializer):
         model = ProgressionSlot
         fields = ['id', 'exercise', '_progression']
 
-class SetSerializer(FilterRelatedMixin, serializers.ModelSerializer):
+class SetSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
     exercise = serializers.HyperlinkedRelatedField(
         queryset=Exercise.objects.all(),
         view_name='exercises-detail',
@@ -192,11 +205,3 @@ class SetSerializer(FilterRelatedMixin, serializers.ModelSerializer):
         extra_kwargs = {
             'url': {'view_name': 'sets-detail'}
             }
-
-    def filter_exercise(self, queryset):
-        request = self.context['request']
-        return queryset.filter(owner=request.user)
-
-    def filter_workout(self, queryset):
-        request = self.context['request']
-        return queryset.filter(owner=request.user)
