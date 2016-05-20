@@ -87,7 +87,7 @@ class RoutineDayHyperlink(serializers.HyperlinkedRelatedField):
         }
         return self.get_queryset().get(**lookup_kwargs)
 
-class RoutineDaySerializer(serializers.HyperlinkedModelSerializer):
+class RoutineDaySerializer(FilterUserRelatedMixin, serializers.HyperlinkedModelSerializer):
 
     position = serializers.IntegerField()
     routine = serializers.HyperlinkedRelatedField(
@@ -103,7 +103,7 @@ class RoutineDaySerializer(serializers.HyperlinkedModelSerializer):
                   'routine'
                  ]
 
-class RoutineSerializer(serializers.HyperlinkedModelSerializer):
+class RoutineSerializer(FilterUserRelatedMixin, serializers.HyperlinkedModelSerializer):
     cycle_length = serializers.IntegerField()
     cycle_position = serializers.IntegerField()
     routinedays = RoutineDayHyperlink(many=True, read_only=True)
@@ -122,7 +122,7 @@ class RoutineSerializer(serializers.HyperlinkedModelSerializer):
             'url': {'view_name': 'routines-detail'}
             }
 
-class WorkoutSerializer(FilterRelatedMixin, serializers.ModelSerializer):
+class WorkoutSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
     name = serializers.CharField(required=False)
     date = serializers.DateField(required=False)
     owner = serializers.PrimaryKeyRelatedField(
@@ -166,7 +166,7 @@ class ProgressionSlotHyperlink(serializers.HyperlinkedRelatedField):
         }
         return self.get_queryset().get(**lookup_kwargs)
 
-class ProgressionSerializer(serializers.ModelSerializer):
+class ProgressionSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
 
     progressionslots = ProgressionSlotHyperlink(many=True, read_only=True)
 
