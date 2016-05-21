@@ -13,7 +13,6 @@ from core.models import (
     MuscleupUser,
     Set,
     )
-from rest_framework_nested.relations import NestedHyperlinkedRelatedField
 
 class FilterRelatedMixin(object):
     """
@@ -166,13 +165,14 @@ class ProgressionSlotHyperlink(serializers.HyperlinkedRelatedField):
         }
         return self.get_queryset().get(**lookup_kwargs)
 
-class ProgressionSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
+class ProgressionSerializer(FilterUserRelatedMixin,
+                            serializers.ModelSerializer):
 
     progressionslots = ProgressionSlotHyperlink(many=True, read_only=True)
 
     class Meta:
         model = Progression
-        fields=('url', 'id', 'name', 'progressionslots')
+        fields = ('url', 'id', 'name', 'progressionslots')
         extra_kwargs = {
             'url': {'view_name': 'progressions-detail'}
             }
