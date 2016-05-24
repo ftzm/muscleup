@@ -26,6 +26,7 @@ from core.serializers import (
     ProgressionSerializer,
     ProgressionSlotSerializer,
     SetSerializer,
+    WorkoutSetSerializer,
     )
 
 class OwndedDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -70,12 +71,6 @@ class WorkoutDetail(OwndedDetailView):
     query_model = Workout
     serializer_class = WorkoutSerializer
 
-class SetList(OwndedListView):
-    """
-    API endpoint that allows workouts to be viewed or edited
-    """
-    query_model = Set
-    serializer_class = SetSerializer
 
 class SetDetail(OwndedDetailView):
     """
@@ -147,3 +142,25 @@ class RoutineDayDetail(generics.RetrieveUpdateDestroyAPIView):
         routine = Routine.objects.get(pk=self.kwargs['routine_pk'],
                                               owner=user)
         return routine.routinedays.all()
+
+class WorkoutSetList(generics.ListCreateAPIView):
+    serializer_class = WorkoutSetSerializer
+
+    def get_queryset(self):
+        workout = Workout.objects.get(pk=self.kwargs['pk'],
+                                      owner=self.request.user)
+        return workout.sets.all()
+
+    def perform_create(self, serializer):
+        workout = Workout.objects.get(pk=self.kwargs['pk'],
+                                      owner=self.request.user)
+        serializer.save(workout=workout, owner=self.request.user)
+
+class WorkoutSetDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = WorkoutSetSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        workout = Workout.objects.get(pk=self.kwargs['workout_pk'],
+                                      owner=user)
+        return workout.sets.all()

@@ -58,14 +58,25 @@ class ExerciseSerializer(serializers.ModelSerializer):
         fields = ['url',
                   'id',
                   'name',
-                  'owner'
                  ]
         extra_kwargs = {
             'url': {'view_name': 'exercises-detail'}
             }
 
-class RoutineDayHyperlink(serializers.HyperlinkedRelatedField):
-    view_name = 'routines-routinedays-detail'
+class DoubleHyperlink(serializers.HyperlinkedRelatedField):
+    """
+    Class to simplify hyperlinks to once-nested resources.
+    Supply the view name and name of the parent resource.
+
+    Requires that:
+    'pk' be used as the lookup field for all models,
+    the nested url kwarg be 'pk',
+    the parent url kwarg have the format 'parentname_pk',
+    the nested model foreignkey field to parent be the same parentname
+        as in the url.
+
+    """
+    top_name = None
 
     # Override internal method to disable use of PKOnlyObject which
     # so get_url() can access actual instance attributes
@@ -74,24 +85,30 @@ class RoutineDayHyperlink(serializers.HyperlinkedRelatedField):
 
     def get_url(self, obj, view_name, request, format):
         url_kwargs = {
-            'routine_pk': obj.routine.pk,
+            self.top_name + '_pk': getattr(obj, self.top_name).pk,
             'pk': obj.pk
         }
-        return reverse(view_name, kwargs=url_kwargs, request=request, format=format)
+        return reverse(view_name, kwargs=url_kwargs,
+                       request=request, format=format)
 
     def get_object(self, view_name, view_args, view_kwargs):
         lookup_kwargs = {
-           'routine__pk': view_kwargs['routine_pk'],
-           'pk': view_kwargs['pk']
+            self.top_name + '__pk': view_kwargs[self.top_name + 'pk'],
+            'pk': view_kwargs['pk']
         }
         return self.get_queryset().get(**lookup_kwargs)
 
-class RoutineDaySerializer(FilterUserRelatedMixin, serializers.HyperlinkedModelSerializer):
+class RoutineDayHyperlink(DoubleHyperlink):
+    view_name = 'routines-routinedays-detail'
+    top_name = 'routine'
+
+class RoutineDaySerializer(FilterUserRelatedMixin,
+                           serializers.HyperlinkedModelSerializer):
 
     position = serializers.IntegerField()
     routine = serializers.HyperlinkedRelatedField(
-         read_only=True,
-         view_name='routines-detail'
+        read_only=True,
+        view_name='routines-detail'
     )
 
     class Meta:
@@ -124,8 +141,6 @@ class RoutineSerializer(FilterUserRelatedMixin, serializers.HyperlinkedModelSeri
 class WorkoutSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
     name = serializers.CharField(required=False)
     date = serializers.DateField(required=False)
-    owner = serializers.PrimaryKeyRelatedField(
-        queryset = MuscleupUser.objects.all())
     routineday = RoutineDayHyperlink(queryset=RoutineDay.objects.all())
 
     class Meta:
@@ -134,7 +149,6 @@ class WorkoutSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
                   'id',
                   'name',
                   'date',
-                  'owner',
                   'routineday'
                  ]
         extra_kwargs = {
@@ -204,4 +218,17 @@ class SetSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
         fields = ['id', 'url', 'exercise', 'workout', 'reps', 'weight']
         extra_kwargs = {
             'url': {'view_name': 'sets-detail'}
+            }
+
+class WorkoutSetSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
+    exercise = serializers.HyperlinkedRelatedField(
+        queryset=Exercise.objects.all(),
+        view_name='exercises-detail',
+        )
+
+    class Meta:
+        model = Set
+        fields = ['id', 'exercise', 'reps', 'weight']
+        extra_kwargs = {
+            'url': {'view_name': 'workouts-sets-detail'}
             }
