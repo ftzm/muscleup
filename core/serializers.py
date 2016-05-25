@@ -76,7 +76,7 @@ class DoubleHyperlink(serializers.HyperlinkedRelatedField):
         as in the url.
 
     """
-    top_name = None
+    parent_name = None
 
     # Override internal method to disable use of PKOnlyObject which
     # so get_url() can access actual instance attributes
@@ -85,7 +85,7 @@ class DoubleHyperlink(serializers.HyperlinkedRelatedField):
 
     def get_url(self, obj, view_name, request, format):
         url_kwargs = {
-            self.top_name + '_pk': getattr(obj, self.top_name).pk,
+            self.parent_name + '_pk': getattr(obj, self.parent_name).pk,
             'pk': obj.pk
         }
         return reverse(view_name, kwargs=url_kwargs,
@@ -93,14 +93,14 @@ class DoubleHyperlink(serializers.HyperlinkedRelatedField):
 
     def get_object(self, view_name, view_args, view_kwargs):
         lookup_kwargs = {
-            self.top_name + '__pk': view_kwargs[self.top_name + 'pk'],
+            self.parent_name + '__pk': view_kwargs[self.parent_name + 'pk'],
             'pk': view_kwargs['pk']
         }
         return self.get_queryset().get(**lookup_kwargs)
 
 class RoutineDayHyperlink(DoubleHyperlink):
     view_name = 'routines-routinedays-detail'
-    top_name = 'routine'
+    parent_name = 'routine'
 
 class RoutineDaySerializer(FilterUserRelatedMixin,
                            serializers.HyperlinkedModelSerializer):
@@ -162,22 +162,9 @@ class WorkoutSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
         request = self.context['request']
         return queryset.filter(owner=request.user)
 
-class ProgressionSlotHyperlink(serializers.HyperlinkedRelatedField):
+class ProgressionSlotHyperlink(DoubleHyperlink):
     view_name = 'progressions-progressionslots-detail'
-
-    def get_url(self, obj, view_name, request, format):
-        url_kwargs = {
-            'progression_pk': obj.progression.pk,
-            'pk': obj.pk
-        }
-        return reverse(view_name, kwargs=url_kwargs, request=request, format=format)
-
-    def get_object(self, view_name, view_args, view_kwargs):
-        lookup_kwargs = {
-           'progression__pk': view_kwargs['progression_pk'],
-           'pk': view_kwargs['pk']
-        }
-        return self.get_queryset().get(**lookup_kwargs)
+    parent_name = 'progression'
 
 class ProgressionSerializer(FilterUserRelatedMixin,
                             serializers.ModelSerializer):
@@ -220,6 +207,10 @@ class SetSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
             'url': {'view_name': 'sets-detail'}
             }
 
+class WorkoutSetHyperlink(DoubleHyperlink):
+    view_name = 'workouts-sets-detail'
+    parent_name = 'workout'
+
 class WorkoutSetSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
     exercise = serializers.HyperlinkedRelatedField(
         queryset=Exercise.objects.all(),
@@ -227,8 +218,6 @@ class WorkoutSetSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
         )
 
     class Meta:
+        serializer_url_field = WorkoutSetHyperlink
         model = Set
         fields = ['id', 'exercise', 'reps', 'weight']
-        extra_kwargs = {
-            'url': {'view_name': 'workouts-sets-detail'}
-            }
