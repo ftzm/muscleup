@@ -41,6 +41,9 @@ class FilterRelatedMixin(object):
                     field.queryset = func(field.queryset)
 
 class FilterUserRelatedMixin(object):
+    """
+    mixin that filters all related fields by the current user
+    """
 
     def __init__(self, *args, **kwargs):
         super(FilterUserRelatedMixin, self).__init__(*args, **kwargs)
@@ -138,10 +141,15 @@ class RoutineSerializer(FilterUserRelatedMixin, serializers.HyperlinkedModelSeri
             'url': {'view_name': 'routines-detail'}
             }
 
+class WorkoutSetHyperlink(DoubleHyperlink):
+    view_name = 'workouts-sets-detail'
+    parent_name = 'workout'
+
 class WorkoutSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
     name = serializers.CharField(required=False)
     date = serializers.DateField(required=False)
     routineday = RoutineDayHyperlink(queryset=RoutineDay.objects.all())
+    sets = WorkoutSetHyperlink(many=True, read_only=True)
 
     class Meta:
         model = Exercise
@@ -149,7 +157,8 @@ class WorkoutSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
                   'id',
                   'name',
                   'date',
-                  'routineday'
+                  'routineday',
+                  'sets',
                  ]
         extra_kwargs = {
             'url': {'view_name': 'workouts-detail'}
@@ -206,10 +215,6 @@ class SetSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
         extra_kwargs = {
             'url': {'view_name': 'sets-detail'}
             }
-
-class WorkoutSetHyperlink(DoubleHyperlink):
-    view_name = 'workouts-sets-detail'
-    parent_name = 'workout'
 
 class WorkoutSetSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
     exercise = serializers.HyperlinkedRelatedField(
