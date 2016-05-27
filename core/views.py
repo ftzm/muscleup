@@ -151,6 +151,7 @@ class RoutineDaySlotList(generics.ListCreateAPIView):
         return RoutineDay.objects.get(
             pk=self.kwargs['pk'],
             routine__pk=self.kwargs['routine_pk'],
+            owner=self.request.user
             )
 
     def get_queryset(self):
@@ -163,11 +164,15 @@ class RoutineDaySlotList(generics.ListCreateAPIView):
 class RoutineDaySlotDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = RoutineDaySlotSerializer
 
+    def get_routineday(self):
+        return RoutineDay.objects.get(
+            pk=self.kwargs['routineday_pk'],
+            routine__pk=self.kwargs['routine_pk'],
+            owner=self.request.user
+            )
+
     def get_queryset(self):
-        user = self.request.user
-        routine = Routine.objects.get(pk=self.kwargs['routine_pk'],
-                                              owner=user)
-        return routine.routinedays.all()
+        return self.get_routineday().routinedayslots.all()
 
 class WorkoutSetList(generics.ListCreateAPIView):
     serializer_class = WorkoutSetSerializer

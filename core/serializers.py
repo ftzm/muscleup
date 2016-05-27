@@ -125,8 +125,8 @@ class TripleHyperlink(serializers.HyperlinkedRelatedField):
 
     def get_url(self, obj, view_name, request, format):
         url_kwargs = {
-            self.grandparent_name + '_pk': getattr(
-                obj, self.parent_name.grandparent_name).pk,
+            self.grandparent_name + '_pk': getattr(getattr(
+                obj, self.parent_name), self.grandparent_name).pk,
             self.parent_name + '_pk': getattr(obj, self.parent_name).pk,
             'pk': obj.pk
         }
@@ -142,20 +142,33 @@ class TripleHyperlink(serializers.HyperlinkedRelatedField):
         }
         return self.get_queryset().get(**lookup_kwargs)
 
-class RoutineDaySlotSerializer(FilterUserRelatedMixin,
-                               serializers.HyperlinkedModelSerializer):
+class RoutineDayHyperlink(DoubleHyperlink):
+    view_name = 'routines-routinedays-detail'
+    parent_name = 'routine'
 
-    # exercise = serializers.HyperlinkedRelatedField(
-    #     view_name='exercises-detail',
-    #     queryset=Exercise.objects.all())
+class RoutineDaySlotHyperlink(TripleHyperlink):
+    view_name = 'routines-routinedays-slot-detail'
+    grandparent_name = 'routine'
+    parent_name = 'routineday'
+
+class RoutineDaySlotSerializer(FilterUserRelatedMixin,
+                               serializers.ModelSerializer):
+
+    exercise = serializers.HyperlinkedRelatedField(
+        view_name='exercises-detail',
+        queryset=Exercise.objects.all())
+    progression = serializers.HyperlinkedRelatedField(
+        view_name='progressions-detail',
+        queryset=Progression.objects.all())
+    routineday = RoutineDayHyperlink(queryset=RoutineDay.objects.all())
 
     class Meta:
         model = RoutineDaySlot
         fields = ['id',
-                  # 'exercise',
-                  # 'routineday',
+                  'exercise',
+                  'routineday',
                   'order',
-                  # 'progression',
+                  'progression',
                   # 'upgrade',
                   'main_reps_goal',
                   'main_weight_goal',
@@ -165,9 +178,6 @@ class RoutineDaySlotSerializer(FilterUserRelatedMixin,
                   'snd_sets_goal'
                  ]
 
-class RoutineDayHyperlink(DoubleHyperlink):
-    view_name = 'routines-routinedays-detail'
-    parent_name = 'routine'
 
 class RoutineDaySerializer(FilterUserRelatedMixin,
                            serializers.HyperlinkedModelSerializer):
@@ -177,12 +187,14 @@ class RoutineDaySerializer(FilterUserRelatedMixin,
         read_only=True,
         view_name='routines-detail'
     )
+    routinedayslots = RoutineDaySlotHyperlink(many=True, read_only=True)
 
     class Meta:
         model = RoutineDay
         fields = ['id',
                   'name',
                   'position',
+                  'routinedayslots',
                   'routine'
                  ]
 
