@@ -101,6 +101,70 @@ class DoubleHyperlink(serializers.HyperlinkedRelatedField):
         }
         return self.get_queryset().get(**lookup_kwargs)
 
+class TripleHyperlink(serializers.HyperlinkedRelatedField):
+    """
+    Class to simplify hyperlinks to once-nested resources.
+    Supply the view name, the grandparent resource and
+    the parent resource.
+
+    Requires that:
+    'pk' be used as the lookup field for all models,
+    the nested url kwarg be 'pk',
+    the parent url kwarg have the format 'parentname_pk',
+    the nested model foreignkey field to parent be the same parentname
+        as in the url.
+
+    """
+    grandparent_name = None
+    parent_name = None
+
+    # Override internal method to disable use of PKOnlyObject which
+    # so get_url() can access actual instance attributes
+    def use_pk_only_optimization(self):
+        return False
+
+    def get_url(self, obj, view_name, request, format):
+        url_kwargs = {
+            self.grandparent_name + '_pk': getattr(
+                obj, self.parent_name.grandparent_name).pk,
+            self.parent_name + '_pk': getattr(obj, self.parent_name).pk,
+            'pk': obj.pk
+        }
+        return reverse(view_name, kwargs=url_kwargs,
+                       request=request, format=format)
+
+    def get_object(self, view_name, view_args, view_kwargs):
+        lookup_kwargs = {
+            self.grandparent_name + "__" + self.parent_name ++ '__pk': \
+                view_kwargs[self.parent_name + 'pk'],
+            self.parent_name + '__pk': view_kwargs[self.parent_name + 'pk'],
+            'pk': view_kwargs['pk']
+        }
+        return self.get_queryset().get(**lookup_kwargs)
+
+class RoutineDaySlotSerializer(FilterUserRelatedMixin,
+                               serializers.HyperlinkedModelSerializer):
+
+    # exercise = serializers.HyperlinkedRelatedField(
+    #     view_name='exercises-detail',
+    #     queryset=Exercise.objects.all())
+
+    class Meta:
+        model = RoutineDaySlot
+        fields = ['id',
+                  # 'exercise',
+                  # 'routineday',
+                  'order',
+                  # 'progression',
+                  # 'upgrade',
+                  'main_reps_goal',
+                  'main_weight_goal',
+                  'main_sets_goal',
+                  'snd_reps_goal',
+                  'snd_weight_goal',
+                  'snd_sets_goal'
+                 ]
+
 class RoutineDayHyperlink(DoubleHyperlink):
     view_name = 'routines-routinedays-detail'
     parent_name = 'routine'

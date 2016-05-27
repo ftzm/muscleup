@@ -49,9 +49,17 @@ api_v1_patterns = [
         views.RoutineDayList.as_view(),
         name='routines-routineslots-list'),
     url(r'^routines/(?P<routine_pk>[0-9]+)/routinedays/' \
-         '(?P<pk>[0-9]+)/',
+         '(?P<pk>[0-9]+)/$',
         views.RoutineDayDetail.as_view(),
         name='routines-routinedays-detail'),
+    url(r'^routines/(?P<routine_pk>[0-9]+)/routinedays/' \
+         '(?P<pk>[0-9]+)/slots/$',
+        views.RoutineDaySlotList.as_view(),
+        name='routines-routinedays-slot-list'),
+    url(r'^routines/(?P<routine_pk>[0-9]+)/routinedays/' \
+         '(?P<routineday_pk>[0-9]+)/slots/(?P<pk>[0-9]+)/$',
+        views.RoutineDaySlotDetail.as_view(),
+        name='routines-routinedays-slot-detail'),
 ]
 
 urlpatterns = [

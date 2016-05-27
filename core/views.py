@@ -22,6 +22,7 @@ from core.serializers import (
     ExerciseSerializer,
     RoutineSerializer,
     RoutineDaySerializer,
+    RoutineDaySlotSerializer,
     WorkoutSerializer,
     ProgressionSerializer,
     ProgressionSlotSerializer,
@@ -136,6 +137,31 @@ class RoutineDayList(generics.ListCreateAPIView):
 
 class RoutineDayDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = RoutineDaySerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        routine = Routine.objects.get(pk=self.kwargs['routine_pk'],
+                                      owner=user)
+        return routine.routinedays.all()
+
+class RoutineDaySlotList(generics.ListCreateAPIView):
+    serializer_class = RoutineDaySlotSerializer
+
+    def get_routineday(self):
+        return RoutineDay.objects.get(
+            pk=self.kwargs['pk'],
+            routine__pk=self.kwargs['routine_pk'],
+            )
+
+    def get_queryset(self):
+        return self.get_routineday().routinedayslots.all()
+
+    def perform_create(self, serializer):
+        routineday = self.get_routineday()
+        serializer.save(routineday=routineday, owner=self.request.user)
+
+class RoutineDaySlotDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = RoutineDaySlotSerializer
 
     def get_queryset(self):
         user = self.request.user
