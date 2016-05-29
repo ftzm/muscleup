@@ -1,3 +1,4 @@
+# pylint: disable=too-few-public-methods
 """Serializers for Django Rest Framework"""
 
 from rest_framework import serializers
@@ -10,7 +11,6 @@ from core.models import (
     RoutineDaySlot,
     Progression,
     ProgressionSlot,
-    MuscleupUser,
     Set,
     )
 
@@ -30,8 +30,7 @@ class FilterRelatedMixin(object):
     def __init__(self, *args, **kwargs):
         super(FilterRelatedMixin, self).__init__(*args, **kwargs)
         for name, field in self.fields.items():
-            if isinstance(field, serializers.RelatedField) or \
-                isinstance(field, NestedHyperlinkedRelatedField):
+            if isinstance(field, serializers.RelatedField):
                 method_name = 'filter_%s' % name
                 try:
                     func = getattr(self, method_name)
@@ -47,7 +46,7 @@ class FilterUserRelatedMixin(object):
 
     def __init__(self, *args, **kwargs):
         super(FilterUserRelatedMixin, self).__init__(*args, **kwargs)
-        for name, field in self.fields.items():
+        for _, field in self.fields.items():
             if isinstance(field, serializers.RelatedField):
                 try:
                     request = self.context['request']
@@ -184,7 +183,8 @@ class ExerciseSerializer(serializers.ModelSerializer):
             'url': {'view_name': 'exercises-detail'}
             }
 
-class ExerciseSetSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
+class ExerciseSetSerializer(FilterUserRelatedMixin,
+                            serializers.ModelSerializer):
     workout = serializers.HyperlinkedRelatedField(
         queryset=Workout.objects.all(),
         view_name='workouts-detail',
@@ -256,7 +256,8 @@ class ProgressionSlotSerializer(FilterUserRelatedMixin,
         model = ProgressionSlot
         fields = ['id', 'exercise', '_progression']
 
-class RoutineSerializer(FilterUserRelatedMixin, serializers.HyperlinkedModelSerializer):
+class RoutineSerializer(FilterUserRelatedMixin,
+                        serializers.HyperlinkedModelSerializer):
     cycle_length = serializers.IntegerField()
     cycle_position = serializers.IntegerField()
     routinedays = RoutineDayHyperlink(many=True, read_only=True)

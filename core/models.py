@@ -183,6 +183,10 @@ class ProgressionSlot(models.Model):
             self._current = value
 
 class RoutineDay(models.Model):
+    """
+    Model representing a day in a fitness routine.
+    """
+
     name = models.TextField(default="")
     routine = models.ForeignKey(
         Routine, default=1, on_delete=models.CASCADE,
@@ -321,7 +325,8 @@ class WorkoutManager(models.Manager): #pylint: disable=too-few-public-methods
         if date is None:
             date = datetime.date.today()
 
-        workout = self.create(routineday=routineday, name=name, date=date, owner=owner)
+        workout = self.create(
+            routineday=routineday, name=name, date=date, owner=owner)
         return workout
 
 

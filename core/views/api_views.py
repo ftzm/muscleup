@@ -1,3 +1,4 @@
+#pylint: disable=too-many-ancestors
 
 """
 Website and API views for muscleup
@@ -121,12 +122,12 @@ class RoutineDayList(generics.ListCreateAPIView):
 
     def get_queryset(self):
         routine = Routine.objects.get(pk=self.kwargs['routine_pk'],
-                                              owner=self.request.user)
+                                      owner=self.request.user)
         return routine.routinedays.all()
 
     def perform_create(self, serializer):
         routine = Routine.objects.get(pk=self.kwargs['routine_pk'],
-                                              owner=self.request.user)
+                                      owner=self.request.user)
         serializer.save(routine=routine, owner=self.request.user)
 
 class RoutineDayDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -195,12 +196,12 @@ class ExerciseSetList(generics.ListCreateAPIView):
 
     def get_queryset(self):
         exercise = Exercise.objects.get(pk=self.kwargs['pk'],
-                                      owner=self.request.user)
+                                        owner=self.request.user)
         return exercise.sets.all()
 
     def perform_create(self, serializer):
         exercise = Exercise.objects.get(pk=self.kwargs['pk'],
-                                      owner=self.request.user)
+                                        owner=self.request.user)
         serializer.save(exercise=exercise, owner=self.request.user)
 
 class ExerciseSetDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -209,5 +210,5 @@ class ExerciseSetDetail(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         user = self.request.user
         exercise = Exercise.objects.get(pk=self.kwargs['exercise_pk'],
-                                      owner=user)
+                                        owner=user)
         return exercise.sets.all()

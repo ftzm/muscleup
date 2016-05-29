@@ -1,6 +1,6 @@
 """muscleup URL Configuration
 
-The `urlpatterns` list routes URLs to api_views. For more information please see:
+The `urlpatterns` list routes URLs to api_views. For more info please see:
     https://docs.djangoproject.com/en/1.9/topics/http/urls/
 Examples:
 Function api_views
@@ -22,7 +22,8 @@ api_v1_patterns = [
     url(r'^exercises/(?P<pk>[0-9]+)/$',
         api_views.ExerciseDetail.as_view(),
         name='exercises-detail'),
-    url(r'^exercises/(?P<pk>[0-9]+)/sets/$', api_views.ExerciseSetList.as_view()),
+    url(r'^exercises/(?P<pk>[0-9]+)/sets/$',
+        api_views.ExerciseSetList.as_view()),
     url(r'^exercises/(?P<exercise_pk>[0-9]+)/sets/(?P<pk>[0-9]+)/$',
         api_views.ExerciseSetDetail.as_view(),
         name='exercises-sets-detail'),
