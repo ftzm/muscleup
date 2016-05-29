@@ -11,6 +11,7 @@ from core.models import (
     Workout,
     Progression,
     Set,
+    Upgrade,
     )
 from core.serializers import (
     ExerciseSerializer,
@@ -21,6 +22,7 @@ from core.serializers import (
     ProgressionSerializer,
     ProgressionSlotSerializer,
     SetSerializer,
+    UpgradeSerializer,
     WorkoutSetSerializer,
     ExerciseSetSerializer,
     )
@@ -52,6 +54,20 @@ class ExerciseDetail(OwndedDetailView):
     """
     query_model = Exercise
     serializer_class = ExerciseSerializer
+
+class UpgradeList(OwndedListView):
+    """
+    API endpoint that allows exercises to be viewed or edited
+    """
+    query_model = Upgrade
+    serializer_class = UpgradeSerializer
+
+class UpgradeDetail(OwndedDetailView):
+    """
+    API endpoint that allows exercises to be viewed or edited
+    """
+    query_model = Upgrade
+    serializer_class = UpgradeSerializer
 
 class WorkoutList(OwndedListView):
     """

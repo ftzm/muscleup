@@ -12,6 +12,7 @@ from core.models import (
     Progression,
     ProgressionSlot,
     Set,
+    Upgrade,
     )
 
 class FilterRelatedMixin(object):
@@ -165,6 +166,22 @@ class SetSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
     class Meta:
         model = Set
         fields = ['id', 'url', 'exercise', 'workout', 'reps', 'weight']
+        extra_kwargs = {
+            'url': {'view_name': 'sets-detail'}
+            }
+
+class UpgradeSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
+
+    class Meta:
+        model = Upgrade
+        fields = ['id',
+                  'main_reps_adj',
+                  'main_weight_adj',
+                  'main_sets_adj',
+                  'snd_reps_adj',
+                  'snd_weight_adj',
+                  'snd_sets_adj',
+                 ]
         extra_kwargs = {
             'url': {'view_name': 'sets-detail'}
             }

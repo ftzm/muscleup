@@ -1,5 +1,5 @@
+ensure all api serializers representing all fields correctly
 fix progressionslot uses _progression in serializer or w/e
-fix workout numbering
 handle when not logged in
 routine creation method to ensure that position is set last, or alternatively a different position setting method that expands length.
 fake boolean finalized field on workout to run upgrade method.
