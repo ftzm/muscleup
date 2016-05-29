@@ -2,20 +2,13 @@
 """
 Website and API views for muscleup
 """
-from django.http import Http404
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework import viewsets, mixins, generics
-from rest_framework.response import Response
-from rest_framework.decorators import detail_route, list_route
-from django.shortcuts import render, get_object_or_404
+from rest_framework import generics
 from core.models import (
     Exercise,
     Routine,
     RoutineDay,
     Workout,
     Progression,
-    ProgressionSlot,
     Set,
     )
 from core.serializers import (

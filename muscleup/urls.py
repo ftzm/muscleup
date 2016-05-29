@@ -1,13 +1,13 @@
 """muscleup URL Configuration
 
-The `urlpatterns` list routes URLs to views. For more information please see:
+The `urlpatterns` list routes URLs to api_views. For more information please see:
     https://docs.djangoproject.com/en/1.9/topics/http/urls/
 Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  url(r'^$', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
+Function api_views
+    1. Add an import:  from my_app import api_views
+    2. Add a URL to urlpatterns:  url(r'^$', api_views.home, name='home')
+Class-based api_views
+    1. Add an import:  from other_app.api_views import Home
     2. Add a URL to urlpatterns:  url(r'^$', Home.as_view(), name='home')
 Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
@@ -15,54 +15,54 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from core import views
+from core.views import api_views
 
 api_v1_patterns = [
-    url(r'^exercises/$', views.ExerciseList.as_view()),
+    url(r'^exercises/$', api_views.ExerciseList.as_view()),
     url(r'^exercises/(?P<pk>[0-9]+)/$',
-        views.ExerciseDetail.as_view(),
+        api_views.ExerciseDetail.as_view(),
         name='exercises-detail'),
-    url(r'^exercises/(?P<pk>[0-9]+)/sets/$', views.ExerciseSetList.as_view()),
+    url(r'^exercises/(?P<pk>[0-9]+)/sets/$', api_views.ExerciseSetList.as_view()),
     url(r'^exercises/(?P<exercise_pk>[0-9]+)/sets/(?P<pk>[0-9]+)/$',
-        views.ExerciseSetDetail.as_view(),
+        api_views.ExerciseSetDetail.as_view(),
         name='exercises-sets-detail'),
-    url(r'^workouts/$', views.WorkoutList.as_view()),
+    url(r'^workouts/$', api_views.WorkoutList.as_view()),
     url(r'^workouts/(?P<pk>[0-9]+)/$',
-        views.WorkoutDetail.as_view(),
+        api_views.WorkoutDetail.as_view(),
         name='workouts-detail'),
-    url(r'^workouts/(?P<pk>[0-9]+)/sets/$', views.WorkoutSetList.as_view()),
+    url(r'^workouts/(?P<pk>[0-9]+)/sets/$', api_views.WorkoutSetList.as_view()),
     url(r'^workouts/(?P<workout_pk>[0-9]+)/sets/(?P<pk>[0-9]+)/$',
-        views.WorkoutSetDetail.as_view(),
+        api_views.WorkoutSetDetail.as_view(),
         name='workouts-sets-detail'),
-    url(r'^progressions/$', views.ProgressionList.as_view()),
+    url(r'^progressions/$', api_views.ProgressionList.as_view()),
     url(r'^progressions/(?P<pk>[0-9]+)/$',
-        views.ProgressionDetail.as_view(),
+        api_views.ProgressionDetail.as_view(),
         name='progressions-detail'),
     url(r'^progressions/(?P<progression_pk>[0-9]+)/progressionslots/$',
-        views.ProgressionSlotList.as_view(),
+        api_views.ProgressionSlotList.as_view(),
         name='progressions-progressionslots-list'),
     url(r'^progressions/(?P<progression_pk>[0-9]+)/progressionslots/' \
          '(?P<pk>[0-9]+)/',
-        views.ProgressionSlotDetail.as_view(),
+        api_views.ProgressionSlotDetail.as_view(),
         name='progressions-progressionslots-detail'),
-    url(r'^routines/$', views.RoutineList.as_view()),
+    url(r'^routines/$', api_views.RoutineList.as_view()),
     url(r'^routines/(?P<pk>[0-9]+)/$',
-        views.RoutineDetail.as_view(),
+        api_views.RoutineDetail.as_view(),
         name='routines-detail'),
     url(r'^routines/(?P<routine_pk>[0-9]+)/routinedays/$',
-        views.RoutineDayList.as_view(),
+        api_views.RoutineDayList.as_view(),
         name='routines-routineslots-list'),
     url(r'^routines/(?P<routine_pk>[0-9]+)/routinedays/' \
          '(?P<pk>[0-9]+)/$',
-        views.RoutineDayDetail.as_view(),
+        api_views.RoutineDayDetail.as_view(),
         name='routines-routinedays-detail'),
     url(r'^routines/(?P<routine_pk>[0-9]+)/routinedays/' \
          '(?P<pk>[0-9]+)/slots/$',
-        views.RoutineDaySlotList.as_view(),
+        api_views.RoutineDaySlotList.as_view(),
         name='routines-routinedays-slot-list'),
     url(r'^routines/(?P<routine_pk>[0-9]+)/routinedays/' \
          '(?P<routineday_pk>[0-9]+)/slots/(?P<pk>[0-9]+)/$',
-        views.RoutineDaySlotDetail.as_view(),
+        api_views.RoutineDaySlotDetail.as_view(),
         name='routines-routinedays-slot-detail'),
 ]
 

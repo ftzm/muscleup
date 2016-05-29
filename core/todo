@@ -1,0 +1,31 @@
+fix progressionslot uses _progression in serializer or w/e
+fix workout numbering
+handle when not logged in
+routine creation method to ensure that position is set last, or alternatively a different position setting method that expands length.
+fake boolean finalized field on workout to run upgrade method.
+remainder of tests moved to using owner style.
+
+info about progression upgrade conditions in progressionslot
+
+three routine types to account for:
+    bodyweight beginners program
+    stronglifts
+    bodybuilding.com program
+    test for all of these
+
+no repeat names (of anything)
+cascade everywhere it needs to be
+
+------------------------------------------------------------
+   More Tests
+------------------------------------------------------------
+no duplicates in relationships (achieve with unique_together meta option)
+tests to ensure deleting of everything works as expected.
+
+------------------------------------------------------------
+   Possible Refactoring
+------------------------------------------------------------
+number workouts based on the number of the previous workout -- that way if previous workouts are deleted the number doesn't drop down
+workout object time
+charfield on workout/exercise for notes.
+
