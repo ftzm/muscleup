@@ -55,17 +55,6 @@ class FilterUserRelatedMixin(object):
                 except AttributeError:
                     pass
 
-class ExerciseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Exercise
-        fields = ['url',
-                  'id',
-                  'name',
-                 ]
-        extra_kwargs = {
-            'url': {'view_name': 'exercises-detail'}
-            }
-
 class DoubleHyperlink(serializers.HyperlinkedRelatedField):
     """
     Class to simplify hyperlinks to once-nested resources.
@@ -142,6 +131,14 @@ class TripleHyperlink(serializers.HyperlinkedRelatedField):
         }
         return self.get_queryset().get(**lookup_kwargs)
 
+class WorkoutSetHyperlink(DoubleHyperlink):
+    view_name = 'workouts-sets-detail'
+    parent_name = 'workout'
+
+class ExerciseSetHyperlink(DoubleHyperlink):
+    view_name = 'exercises-sets-detail'
+    parent_name = 'exercise'
+
 class RoutineDayHyperlink(DoubleHyperlink):
     view_name = 'routines-routinedays-detail'
     parent_name = 'routine'
@@ -150,6 +147,20 @@ class RoutineDaySlotHyperlink(TripleHyperlink):
     view_name = 'routines-routinedays-slot-detail'
     grandparent_name = 'routine'
     parent_name = 'routineday'
+
+class ExerciseSerializer(serializers.ModelSerializer):
+    sets = ExerciseSetHyperlink(many=True, read_only=True)
+
+    class Meta:
+        model = Exercise
+        fields = ['url',
+                  'id',
+                  'name',
+                  'sets',
+                 ]
+        extra_kwargs = {
+            'url': {'view_name': 'exercises-detail'}
+            }
 
 class RoutineDaySlotSerializer(FilterUserRelatedMixin,
                                serializers.ModelSerializer):
@@ -217,9 +228,6 @@ class RoutineSerializer(FilterUserRelatedMixin, serializers.HyperlinkedModelSeri
             'url': {'view_name': 'routines-detail'}
             }
 
-class WorkoutSetHyperlink(DoubleHyperlink):
-    view_name = 'workouts-sets-detail'
-    parent_name = 'workout'
 
 class WorkoutSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
     name = serializers.CharField(required=False)
@@ -302,3 +310,14 @@ class WorkoutSetSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
         serializer_url_field = WorkoutSetHyperlink
         model = Set
         fields = ['id', 'exercise', 'reps', 'weight']
+
+class ExerciseSetSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
+    workout = serializers.HyperlinkedRelatedField(
+        queryset=Workout.objects.all(),
+        view_name='workouts-detail',
+        )
+
+    class Meta:
+        serializer_url_field = ExerciseSetHyperlink
+        model = Set
+        fields = ['id', 'workout', 'reps', 'weight']
