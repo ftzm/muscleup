@@ -1,0 +1,26 @@
+
+big picture:
+
+resources represented:
+
+workouts
+workouts/1
+PATCH workouts/1 - partial upgrade to workout
+have a fake boolean field to
+sets
+exercises
+routines
+routinedays
+routinedayslots
+progression
+progressionslot
+
+
+
+all prefix with /api/v1/
+sets
+sets/1
+workouts
+workout/1
+
+

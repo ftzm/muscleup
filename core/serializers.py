@@ -85,7 +85,7 @@ class DoubleHyperlink(serializers.HyperlinkedRelatedField):
 
     def get_object(self, view_name, view_args, view_kwargs):
         lookup_kwargs = {
-            self.parent_name + '__pk': view_kwargs[self.parent_name + 'pk'],
+            self.parent_name + '__pk': view_kwargs[self.parent_name + '_pk'],
             'pk': view_kwargs['pk']
         }
         return self.get_queryset().get(**lookup_kwargs)
@@ -125,9 +125,9 @@ class TripleHyperlink(serializers.HyperlinkedRelatedField):
 
     def get_object(self, view_name, view_args, view_kwargs):
         lookup_kwargs = {
-            self.grandparent_name + "__" + self.parent_name ++ '__pk': \
+            self.grandparent_name + "__" + self.parent_name ++ '_pk': \
                 view_kwargs[self.parent_name + 'pk'],
-            self.parent_name + '__pk': view_kwargs[self.parent_name + 'pk'],
+            self.parent_name + '__pk': view_kwargs[self.parent_name + '_pk'],
             'pk': view_kwargs['pk']
         }
         return self.get_queryset().get(**lookup_kwargs)
@@ -213,8 +213,8 @@ class ExerciseSetSerializer(FilterUserRelatedMixin,
         fields = ['id', 'workout', 'reps', 'weight']
 
 class WorkoutSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
-    name = serializers.CharField(required=False)
-    date = serializers.DateField(required=False)
+    name = serializers.CharField(required=False, allow_null=True)
+    date = serializers.DateField()
     routineday = RoutineDayHyperlink(queryset=RoutineDay.objects.all())
     sets = WorkoutSetHyperlink(many=True, read_only=True)
 
@@ -232,7 +232,8 @@ class WorkoutSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
             }
 
     def create(self, validated_data):
-        return Workout.objects.create_workout(**validated_data)
+        request = self.context['request']
+        return Workout.objects.create_workout(**validated_data, owner=request.user)
 
     def filter_routineday(self, queryset):
         request = self.context['request']
@@ -320,7 +321,9 @@ class RoutineDaySlotSerializer(FilterUserRelatedMixin,
         queryset=Exercise.objects.all())
     progression = serializers.HyperlinkedRelatedField(
         view_name='progressions-detail',
-        queryset=Progression.objects.all())
+        queryset=Progression.objects.all(),
+        required=False,
+        allow_null=True)
     routineday = RoutineDayHyperlink(queryset=RoutineDay.objects.all())
 
     class Meta:

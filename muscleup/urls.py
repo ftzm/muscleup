@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from core.views import api_views
+from core.views import api_views, web_views
 
 api_v1_patterns = [
     url(r'^exercises/$', api_views.ExerciseList.as_view()),
@@ -76,4 +76,5 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api-auth/', include('rest_framework.urls',
                                namespace='rest_framework')),
+    url(r'^mockup/$', web_views.mockup)
 ]

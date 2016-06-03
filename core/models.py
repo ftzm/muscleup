@@ -45,6 +45,8 @@ class Exercise(models.Model):
     owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
                               related_name='exercises')
 
+    def __str__(self):
+        return 'Exercise: "{}"'.format(self.name)
 
 class Routine(models.Model):
     """TODO: field explanations"""

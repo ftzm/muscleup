@@ -1,0 +1,67 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div id="chartbox" style="width:100%; height:400px;"></div>
+{% endblock %}
+
+{% block scripts %}
+
+<script src="http://code.highcharts.com/highcharts.js"></script>
+<script>
+$(function () {
+    $('#chartbox').highcharts({
+        chart: {
+            type: 'spline'
+        },
+        title: {
+            text: 'Lifting Progress'
+        },
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: { // don't display the dummy year
+                month: '%e. %b',
+                year: '%b'
+            },
+            title: {
+                text: 'Date'
+            }
+        },
+        yAxis: [{
+            title: {
+                text: 'Reps'
+            },
+            min: 0
+            }, {
+            title: {
+                text: 'Weight'
+            },
+            min: 0,
+            opposite: true,
+        }],
+        tooltip: {
+            headerFormat: '<b>{series.name}</b><br>',
+            pointFormat: '{point.x:%e. %b}: {point.y} reps'
+        },
+
+        plotOptions: {
+            spline: {
+                marker: {
+                    enabled: true
+                }
+            }
+        },
+        credits: {
+            enabled: false
+        },
+
+        series: [
+        {% for exercise in chart_data %}
+        {
+            name: '{{ exercise.name }}',
+            data: {{ exercise.data }}
+        },
+        {% endfor %}
+        ]
+    });
+});
+</script>
+{% endblock %}
