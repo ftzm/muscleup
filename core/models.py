@@ -44,6 +44,7 @@ class Exercise(models.Model):
     name = models.TextField(default="", unique=True)
     owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
                               related_name='exercises')
+    bodyweight = models.BooleanField(default=False)
 
     def __str__(self):
         return 'Exercise: "{}"'.format(self.name)
