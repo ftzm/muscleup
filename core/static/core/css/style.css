@@ -5,7 +5,9 @@
  *
  * Made By MaterializeCSS.com
  */
-
+body {
+    background-color: #fcfcfc;
+}
 .icon-block {
   padding: 0 15px;
 }

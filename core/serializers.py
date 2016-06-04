@@ -194,6 +194,7 @@ class ExerciseSerializer(serializers.ModelSerializer):
         fields = ['url',
                   'id',
                   'name',
+                  'bodyweight',
                   'sets',
                  ]
         extra_kwargs = {

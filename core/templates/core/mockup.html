@@ -1,6 +1,9 @@
 {% extends 'core/base.html' %}
 {% block content %}
-<div id="chartbox" style="width:100%; height:400px;"></div>
+<div id="chartbox" class="z-depth-1" style="width:100%; height:400px;"></div>
+<br>
+{{ chart_data }}
+<br>
 {% endblock %}
 
 {% block scripts %}
@@ -27,20 +30,16 @@ $(function () {
         },
         yAxis: [{
             title: {
-                text: 'Reps'
+                text: 'Weight'
             },
             min: 0
             }, {
             title: {
-                text: 'Weight'
+                text: 'Reps'
             },
             min: 0,
             opposite: true,
         }],
-        tooltip: {
-            headerFormat: '<b>{series.name}</b><br>',
-            pointFormat: '{point.x:%e. %b}: {point.y} reps'
-        },
 
         plotOptions: {
             spline: {
@@ -57,7 +56,17 @@ $(function () {
         {% for exercise in chart_data %}
         {
             name: '{{ exercise.name }}',
-            data: {{ exercise.data }}
+            data: {{ exercise.data }},
+            {% if exercise.bodyweight == True %}
+            yAxis: 1,
+            tooltip: {
+                valueSuffix: ' reps'
+            }
+            {% else %}
+            tooltip: {
+                valueSuffix: ' kg'
+            }
+            {% endif %}
         },
         {% endfor %}
         ]
