@@ -2,7 +2,7 @@
 {% block content %}
 <div id="chartbox" class="z-depth-1" style="width:100%; height:400px;"></div>
 <br>
-{{ chart_data }}
+{{ chart_data|safe }}
 <br>
 {% endblock %}
 
@@ -40,7 +40,18 @@ $(function () {
             min: 0,
             opposite: true,
         }],
+        {% comment %}
+        tooltip: {
+            formatter: function () {
+                if (this.series.scale == 'reps') {
+                    return 'weight: <b>' + this.y + '</b>sets: <b>' + this.point.sets + '</b>';
+                } else {
+                    return 'reps: <b>' + this.y + this.series.scale +  '</b>';
+                }
 
+            }
+        },
+        {% endcomment %}
         plotOptions: {
             spline: {
                 marker: {
@@ -52,24 +63,7 @@ $(function () {
             enabled: false
         },
 
-        series: [
-        {% for exercise in chart_data %}
-        {
-            name: '{{ exercise.name }}',
-            data: {{ exercise.data }},
-            {% if exercise.bodyweight == True %}
-            yAxis: 1,
-            tooltip: {
-                valueSuffix: ' reps'
-            }
-            {% else %}
-            tooltip: {
-                valueSuffix: ' kg'
-            }
-            {% endif %}
-        },
-        {% endfor %}
-        ]
+        series: jQuery.parseJSON('{{ chart_data|safe }}')
     });
 });
 </script>
