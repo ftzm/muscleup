@@ -1,4 +1,7 @@
 {% extends 'core/base.html' %}
+
+{% block head_title %}Mockup{% endblock %}
+
 {% block content %}
 <div id="chartbox" class="z-depth-1" style="width:100%; height:400px;"></div>
 <br>
@@ -40,18 +43,6 @@ $(function () {
             min: 0,
             opposite: true,
         }],
-        {% comment %}
-        tooltip: {
-            formatter: function () {
-                if (this.series.scale == 'reps') {
-                    return 'weight: <b>' + this.y + '</b>sets: <b>' + this.point.sets + '</b>';
-                } else {
-                    return 'reps: <b>' + this.y + this.series.scale +  '</b>';
-                }
-
-            }
-        },
-        {% endcomment %}
         plotOptions: {
             spline: {
                 marker: {
