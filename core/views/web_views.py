@@ -1,10 +1,42 @@
+#pylint:disable=no-self-use
 """
 Views for user facing website
 """
-from django.shortcuts import render
-from core.models import Exercise
-from datetime import datetime, timezone
 import json
+from datetime import datetime, timezone
+from django.shortcuts import render, redirect
+from django.views.generic import View
+from django.http import HttpResponse
+from django.contrib.auth import authenticate, login, logout
+from django.http import *
+from core.models import Exercise
+
+class Home(View):
+    def get(self, request):
+        if request.user.is_authenticated():
+            name = 'Champ'
+        else:
+            name = 'Stranger'
+        return render(request, 'core/home.html', {'name': name})
+
+class Login(View):
+    def get(self, request):
+        return render(request, 'core/login.html')
+
+    def post(self, request):
+        username = request.POST['email']
+        password = request.POST['password']
+        user = authenticate(email=username, password=password)
+        if user is not None:
+            login(request, user)
+            return HttpResponseRedirect('/')
+        else:
+            return HttpResponseRedirect('/progress')
+
+class Logout(View):
+    def get(self, request):
+        logout(request)
+        return HttpResponseRedirect('/')
 
 def dt_date_to_epoch(date):
     dt = datetime.combine(date, datetime.min.time())
@@ -109,6 +141,6 @@ def get_chart_data(pks):
 
     return json.dumps(output)
 
-def mockup(request):
+def progress(request):
     chart_data = get_chart_data([6, 7])
-    return render(request, 'core/mockup.html', {"chart_data":chart_data})
+    return render(request, 'core/progress.html', {"chart_data":chart_data})

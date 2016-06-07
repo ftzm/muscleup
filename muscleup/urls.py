@@ -76,5 +76,8 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api-auth/', include('rest_framework.urls',
                                namespace='rest_framework')),
-    url(r'^mockup/$', web_views.mockup)
-]
+    url(r'^progress/$', web_views.progress),
+    url(r'^login/$', web_views.Login.as_view()),
+    url(r'^logout/$', web_views.Logout.as_view()),
+    url(r'^$', web_views.Home.as_view(), name='home'),
+    ]
