@@ -8,6 +8,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import View
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.http import *
 from core.models import Exercise
 
@@ -17,7 +18,11 @@ class Home(View):
             name = 'Champ'
         else:
             name = 'Stranger'
-        return render(request, 'core/home.html', {'name': name})
+        logged_in = request.user.is_authenticated()
+        return render(request, 'core/home.html',
+                      {'name': name,
+                       'logged_in': logged_in}
+                     )
 
 class Login(View):
     def get(self, request):
@@ -141,6 +146,9 @@ def get_chart_data(pks):
 
     return json.dumps(output)
 
+@login_required
 def progress(request):
-    chart_data = get_chart_data([6, 7])
+    user = request.user
+    all_exercise_pks = [e.pk for e in Exercise.objects.filter(owner=user)]
+    chart_data = get_chart_data(all_exercise_pks)
     return render(request, 'core/progress.html', {"chart_data":chart_data})
