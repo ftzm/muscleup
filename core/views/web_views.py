@@ -9,32 +9,43 @@ from django.views.generic import View
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 from django.http import *
 from core.models import Exercise
 
-class Home(View):
+class BaseView(View):
+
+    def logged_in(self, context):
+        context['logged_in'] = self.request.user.is_authenticated()
+        return context
+
+    context = {}
+
+class Home(BaseView):
     def get(self, request):
-        if request.user.is_authenticated():
-            name = 'Champ'
+        self.context = self.logged_in(self.context)
+        if self.context['logged_in'] is True:
+            self.context['name'] = 'Champ'
         else:
-            name = 'Stranger'
-        logged_in = request.user.is_authenticated()
-        return render(request, 'core/home.html',
-                      {'name': name,
-                       'logged_in': logged_in}
-                     )
+            self.context['name'] = 'Stranger'
+        return render(request, 'core/home.html', self.context)
 
 class Login(View):
     def get(self, request):
-        return render(request, 'core/login.html')
+        next = request.GET.get('next', '')
+        return render(request, 'core/login.html', {'next':next})
 
     def post(self, request):
         username = request.POST['email']
         password = request.POST['password']
+        next = request.POST.get('next', '')
         user = authenticate(email=username, password=password)
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect('/')
+            if next == "":
+                return HttpResponseRedirect('/')
+            else:
+                return HttpResponseRedirect(next)
         else:
             return HttpResponseRedirect('/progress')
 
@@ -146,9 +157,11 @@ def get_chart_data(pks):
 
     return json.dumps(output)
 
-@login_required
-def progress(request):
-    user = request.user
-    all_exercise_pks = [e.pk for e in Exercise.objects.filter(owner=user)]
-    chart_data = get_chart_data(all_exercise_pks)
-    return render(request, 'core/progress.html', {"chart_data":chart_data})
+@method_decorator(login_required, name='dispatch')
+class Progress(BaseView):
+    def get(self, request):
+        self.context = self.logged_in(self.context)
+        user = request.user
+        all_exercise_pks = [e.pk for e in Exercise.objects.filter(owner=user)]
+        self.context['chart_data'] = get_chart_data(all_exercise_pks)
+        return render(request, 'core/progress.html', self.context)

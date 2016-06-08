@@ -18,7 +18,7 @@
   <nav class="red darken-3" role="navigation">
       <div class="nav-wrapper container"><a id="logo-container" href="{% url 'home' %}" class="brand-logo">MuscleUp</a>
       <ul class="right hide-on-med-and-down">
-        <li><a href="progress">Progress</a></li>
+        <li><a href="{% url 'progress' %}">Progress</a></li>
         {% if logged_in %}
         <li><a href="{% url 'logout' %}">Logout</a></li>
         {% else %}
@@ -27,7 +27,7 @@
       </ul>
 
       <ul id="nav-mobile" class="side-nav">
-        <li><a href="progress">Progress</a></li>
+        <li><a href="{% url 'progress' %}">Progress</a></li>
         {% if logged_in %}
         <li><a href="{% url 'logout' %}">Logout</a></li>
         {% else %}
