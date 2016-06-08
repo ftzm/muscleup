@@ -13,7 +13,7 @@ from django.utils.decorators import method_decorator
 from django.http import *
 from core.models import Exercise
 from core.chart import get_chart_data
-from core.forms import ExerciseForm
+from core.forms import ContactForm
 
 class BaseView(View):
 
@@ -71,5 +71,11 @@ class Exercises(BaseView):
         self.context = self.logged_in(self.context)
         user = request.user
         self.context['exercises'] = Exercise.objects.filter(owner=user)
-        self.context['form'] = ExerciseForm
+        self.context['form'] = ContactForm
+        return render(request, 'core/exercises.html', self.context)
+
+    def post(self, request):
+        name = request.POST['name']
+        bodyweight = request.POST['bodyweight']
+        Exercise.objects.create(name=name, bodyweight=bodyweight)
         return render(request, 'core/exercises.html', self.context)
