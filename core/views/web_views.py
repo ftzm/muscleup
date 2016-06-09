@@ -16,12 +16,13 @@ from core.chart import get_chart_data
 from core.forms import ContactForm
 
 class BaseView(View):
-
     def logged_in(self, context):
         context['logged_in'] = self.request.user.is_authenticated()
         return context
 
     context = {}
+    context['urls'] = [('progress', 'Progress'),
+                       ('exercises', 'Exercises')]
 
 class Home(BaseView):
     def get(self, request):
@@ -32,10 +33,10 @@ class Home(BaseView):
             self.context['name'] = 'Stranger'
         return render(request, 'core/home.html', self.context)
 
-class Login(View):
+class Login(BaseView):
     def get(self, request):
-        next = request.GET.get('next', '')
-        return render(request, 'core/login.html', {'next':next})
+        self.context['next'] = request.GET.get('next', '')
+        return render(request, 'core/login.html', self.context)
 
     def post(self, request):
         username = request.POST['email']
