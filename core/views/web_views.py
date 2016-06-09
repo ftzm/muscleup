@@ -76,6 +76,14 @@ class Exercises(BaseView):
 
     def post(self, request):
         name = request.POST['name']
-        bodyweight = request.POST['bodyweight']
+        bodyweight = request.POST.get('bodyweight', False)
         Exercise.objects.create(name=name, bodyweight=bodyweight)
-        return render(request, 'core/exercises.html', self.context)
+        return HttpResponseRedirect('/exercises')
+
+@method_decorator(login_required, name='dispatch')
+class DeleteExercises(BaseView):
+    def get(self, request, pk):
+        exercise = Exercise.objects.get(pk=pk, owner=request.user)
+        if exercise:
+            exercise.delete()
+        return HttpResponseRedirect('/exercises/')

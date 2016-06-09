@@ -78,6 +78,7 @@ urlpatterns = [
                                namespace='rest_framework')),
     url(r'^progress/$', web_views.Progress.as_view(), name='progress'),
     url(r'^exercises/$', web_views.Exercises.as_view(), name='exercises'),
+    url(r'^delete_exercise/(?P<pk>[0-9]+)/$', web_views.DeleteExercises.as_view(), name='delete_exercise'),
     url(r'^login/$', web_views.Login.as_view(), name='login'),
     url(r'^logout/$', web_views.Logout.as_view(), name='logout'),
     url(r'^$', web_views.Home.as_view(), name='home'),
