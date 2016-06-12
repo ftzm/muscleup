@@ -1,0 +1,60 @@
+{% extends 'core/base.html' %}
+
+{% block head_title %}Progress{% endblock %}
+
+{% block content %}
+<br>
+<div id="chartbox" class="z-depth-1" style="width:100%; height:400px;"></div>
+<br>
+{% endblock %}
+
+{% block scripts %}
+
+<script src="http://code.highcharts.com/highcharts.js"></script>
+<script>
+$(function () {
+    $('#chartbox').highcharts({
+        chart: {
+            type: 'spline'
+        },
+        title: {
+            text: 'Lifting Progress'
+        },
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: { // don't display the dummy year
+                month: '%e. %b',
+                year: '%b'
+            },
+            title: {
+                text: 'Date'
+            }
+        },
+        yAxis: [{
+            title: {
+                text: 'Weight'
+            },
+            min: 0
+            }, {
+            title: {
+                text: 'Reps'
+            },
+            min: 0,
+            opposite: true,
+        }],
+        plotOptions: {
+            spline: {
+                marker: {
+                    enabled: true
+                }
+            }
+        },
+        credits: {
+            enabled: false
+        },
+
+        series: jQuery.parseJSON('{{ chart_data|safe }}')
+    });
+});
+</script>
+{% endblock %}

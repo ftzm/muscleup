@@ -11,18 +11,19 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.http import *
-from core.models import Exercise
+from core.models import Exercise, Routine
 from core.chart import get_chart_data
 from core.forms import ContactForm
 
 class BaseView(View):
+    context = {}
+    context['urls'] = [('progress', 'Progress'),
+                       ('routines', 'Routines'),
+                       ('exercises', 'Exercises')]
     def logged_in(self, context):
         context['logged_in'] = self.request.user.is_authenticated()
         return context
 
-    context = {}
-    context['urls'] = [('progress', 'Progress'),
-                       ('exercises', 'Exercises')]
 
 class Home(BaseView):
     def get(self, request):
@@ -70,21 +71,40 @@ class Progress(BaseView):
 class Exercises(BaseView):
     def get(self, request):
         self.context = self.logged_in(self.context)
-        user = request.user
-        self.context['exercises'] = Exercise.objects.filter(owner=user)
-        self.context['form'] = ContactForm
+        self.context['exercises'] = Exercise.objects.filter(owner=request.user)
         return render(request, 'core/exercises.html', self.context)
 
     def post(self, request):
         name = request.POST['name']
         bodyweight = request.POST.get('bodyweight', False)
-        Exercise.objects.create(name=name, bodyweight=bodyweight)
+        Exercise.objects.create(name=name, bodyweight=bodyweight, owner=request.user)
         return HttpResponseRedirect('/exercises')
 
 @method_decorator(login_required, name='dispatch')
-class DeleteExercises(BaseView):
+class DeleteExercise(BaseView):
     def get(self, request, pk):
         exercise = Exercise.objects.get(pk=pk, owner=request.user)
         if exercise:
             exercise.delete()
         return HttpResponseRedirect('/exercises/')
+
+class Routines(BaseView):
+    def get(self, request):
+        self.context = self.logged_in(self.context)
+        self.context['routines'] = Routine.objects.filter(owner=request.user)
+        return render(request, 'core/routines.html', self.context)
+
+    def post(self, request):
+        name = request.POST['name']
+        length = int(request.POST.get('length', False))
+        position = int(request.POST.get('position', False))
+        Routine.objects.create(name=name, cycle_length=length, cycle_position=position)
+        return HttpResponseRedirect('/routines')
+
+@method_decorator(login_required, name='dispatch')
+class DeleteRoutine(BaseView):
+    def get(self, request, pk):
+        routine = Routine.objects.get(pk=pk, owner=request.user)
+        if routine:
+            routine.delete()
+        return HttpResponseRedirect('/routines/')

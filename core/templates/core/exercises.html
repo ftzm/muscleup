@@ -1,0 +1,59 @@
+{% extends 'core/base.html' %}
+
+{% block head_title %}Exercises{% endblock %}
+
+{% block content %}
+<br>
+
+<ul class="collection">
+{% for exercise in exercises %}
+<li class="collection-item">{{ exercise.name }} <a href="#modal{{ forloop.counter }}" class="secondary-content modal-trigger" >delete</a></li>
+  <!-- Modal Structure -->
+  <div id="modal{{ forloop.counter }}" class="modal">
+    <div class="modal-content">
+      <h4>Delete Exercise</h4>
+      <p>Are you sure you want to delete the exercise "{{ exercise.name }}"? All recorded sets of this exercise will also be deleted.</p>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat ">No</a>
+      <a href="{% url 'delete_exercise' pk=exercise.id %}" class=" modal-action modal-close waves-effect waves-green btn-flat">Yes</a>
+    </div>
+  </div>
+{% endfor %}
+
+</ul>
+
+<br>
+
+<h5>Add a Workout</h5>
+
+<form class="col s12" action="/exercises/" method="post">
+        {% csrf_token %}
+      <div class="row">
+        <div class="input-field col s9">
+          <input name="name" id="name" type="text" class="validate">
+          <label for="name">Workout Name</label>
+        </div>
+        <div class="input-field col s3">
+          <input type="checkbox"  name="bodyweight" id="bodyweight" />
+          <label for="bodyweight">Bodyweight</label>
+      </div>
+      </div>
+        <div class="control-group">
+            <div class="controls">
+                <button type="submit" class="btn">Create</button>
+            </div>
+        </div>
+</form>
+
+<br>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+  $('.modal-trigger').leanModal();
+});
+</script>
+{% endblock %}

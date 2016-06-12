@@ -1,0 +1,11 @@
+{% with request.resolver_match.url_name as url_name %}
+{% for view_name, title in urls %}
+<li class="{% if url_name == view_name %}active{% endif %}"><a href="/{{ view_name }}/">{{ title }}</a></li>
+{% endfor %}
+{% endwith %}
+
+{% if logged_in %}
+<li><a href="{% url 'logout' %}">Logout</a></li>
+{% else %}
+<li><a href="{% url 'login' %}">Login</a></li>
+{% endif %}

@@ -1,0 +1,91 @@
+{% extends 'core/base.html' %}
+
+{% block head_title %}Routines{% endblock %}
+
+{% block content %}
+<br>
+
+
+
+<div class="row">
+    <div class="col s12">
+      <ul class="tabs">
+{% for routine in routines %}
+    <li class="tab col"><a href="#routine{{ forloop.counter }}">{{ routine.name }}</a></li>
+{% endfor %}
+    <li class="tab col"><a href="#create">Create New</a></li>
+    </div>
+</div>
+
+{% for routine in routines %}
+<div id="routine{{ forloop.counter }}" class="col s12 white">
+
+
+    Length of workout cycle: {{ routine.cycle_length }}<br>
+    Position in the cycle: {{ routine.cycle_position }}<br>
+    {% for day in routine.routinedays.all %}
+    {{ day.name }}<br>
+    {{ day.position }}<br>
+
+    {% for exercise in day.exercises.all %}
+    {{ exercise.name }}<br>
+    {% endfor %}
+
+{% endfor %}
+
+
+<a href="#modal{{ forloop.counter }}" class="modal-trigger" >delete</a>
+
+
+  <!-- Modal Structure -->
+  <div id="modal{{ forloop.counter }}" class="modal">
+    <div class="modal-content">
+      <h4>Delete Routine</h4>
+      <p>Are you sure you want to delete the routine "{{ routine.name }}"?</p>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat ">No</a>
+      <a href="{% url 'delete_routine' pk=routine.id %}" class=" modal-action modal-close waves-effect waves-green btn-flat">Yes</a>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<div id="create" class="col s12">
+<h5>Add a Routine</h5>
+
+<form class="col s12" action="/routines/" method="post">
+        {% csrf_token %}
+      <div class="row">
+        <div class="input-field col s9">
+          <input name="name" id="name" type="text" class="validate">
+          <label for="name">Workout Name</label>
+        </div>
+        <div class="input-field col s3">
+          <input name="length" id="length" type="text" class="validate">
+          <label for="length">Workout length</label>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button type="submit" class="btn">Create</button>
+            </div>
+        </div>
+</form>
+</div>
+</div>
+<br>
+<br>
+<br>
+<br>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+  $('.modal-trigger').leanModal();
+});
+</script>
+{% endblock %}
