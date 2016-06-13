@@ -126,5 +126,8 @@ $(document).ready(function() {
 $(document).ready(function() {
   $('select').material_select();
 });
+{% if msg %}
+Materialize.toast('{{ msg }}', 4000, 'red')
+{% endif %}
   </script>
   {% endblock %}

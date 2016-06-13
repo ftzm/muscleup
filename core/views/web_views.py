@@ -97,6 +97,7 @@ class Routines(BaseView):
     def get(self, request):
         self.context = self.logged_in(self.context)
         self.context['routines'] = Routine.objects.filter(owner=request.user)
+        self.context['msg'] = request.GET.get('msg', '')
         return render(request, 'core/routines.html', self.context)
 
     def post(self, request):
@@ -126,9 +127,10 @@ class AddRoutinedayslot(BaseView):
                 RoutineDaySlot.objects.create(routineday=routineday,
                                               exercise=exercise,
                                               owner=request.user)
+                return HttpResponseRedirect('/routines/')
             except:
                 msg = "failed to schedule exercise"
-        return HttpResponseRedirect('/routines/')
+                return HttpResponseRedirect('/routines/?msg=fail')
 
 @method_decorator(login_required, name='dispatch')
 class DeleteRoutinedayslot(BaseView):
