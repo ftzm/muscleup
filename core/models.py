@@ -59,6 +59,7 @@ class Routine(models.Model):
     cycle_last_set = models.DateField(default=timezone.now)
     owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
                               related_name='routines')
+    active = models.BooleanField(default=True)
 
     def __str__(self):
         return 'Routine "{}"'.format(self.name)
@@ -268,6 +269,9 @@ class RoutineDaySlot(models.Model):
     owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
                               related_name='routinedayslots')
 
+    class Meta:
+        unique_together = ('_exercise','_routineday')
+
     @property
     def order(self):
         return self._order
@@ -306,9 +310,9 @@ class RoutineDaySlot(models.Model):
     @property
     def exercise(self):
         if not self.progression:
-            return self._exercise.pk
+            return self._exercise
         else:
-            return self.progression.current.pk
+            return self.progression.current
 
     @exercise.setter
     def exercise(self, exercise):

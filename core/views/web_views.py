@@ -11,7 +11,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.http import *
-from core.models import Exercise, Routine
+from core.models import (
+    Exercise,
+    Routine,
+    RoutineDay,
+    RoutineDaySlot,
+    )
 from core.chart import get_chart_data
 from core.forms import ContactForm
 
@@ -107,4 +112,28 @@ class DeleteRoutine(BaseView):
         routine = Routine.objects.get(pk=pk, owner=request.user)
         if routine:
             routine.delete()
+        return HttpResponseRedirect('/routines/')
+
+@method_decorator(login_required, name='dispatch')
+class AddRoutinedayslot(BaseView):
+    def post(self, request):
+        exercise_id = int(request.POST.get('exercise', False))
+        exercise = Exercise.objects.get(pk=exercise_id)
+        routineday_id = int(request.POST.get('routineday', False))
+        routineday = RoutineDay.objects.get(pk=routineday_id)
+        if exercise and routineday:
+            try:
+                RoutineDaySlot.objects.create(routineday=routineday,
+                                              exercise=exercise,
+                                              owner=request.user)
+            except:
+                msg = "failed to schedule exercise"
+        return HttpResponseRedirect('/routines/')
+
+@method_decorator(login_required, name='dispatch')
+class DeleteRoutinedayslot(BaseView):
+    def get(self, request, pk):
+        routinedayslot = RoutineDaySlot.objects.get(pk=pk, owner=request.user)
+        if routinedayslot:
+            routinedayslot.delete()
         return HttpResponseRedirect('/routines/')

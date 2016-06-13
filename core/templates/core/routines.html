@@ -8,55 +8,91 @@
 
 
 <div class="row">
-    <div class="col s12">
-      <ul class="tabs">
-{% for routine in routines %}
-    <li class="tab col"><a href="#routine{{ forloop.counter }}">{{ routine.name }}</a></li>
-{% endfor %}
-    <li class="tab col"><a href="#create">Create New</a></li>
-    </div>
-</div>
+  <div class="col s12">
+    <ul class="tabs">
+      {% for routine in routines %}
+      <li class="tab col"><a href="#routine{{ forloop.counter }}">{{ routine.name }}</a></li>
+      {% endfor %}
+      <li class="tab col"><a href="#create">Create New</a></li>
+  </div>
 
-{% for routine in routines %}
-<div id="routine{{ forloop.counter }}" class="col s12 white">
+  {% for routine in routines %}
+  <div id="routine{{ forloop.counter }}" class="col s12">
 
 
+    Active: {{ routine.active }}<br>
     Length of workout cycle: {{ routine.cycle_length }}<br>
-    Position in the cycle: {{ routine.cycle_position }}<br>
+    Current position in the cycle: {{ routine.cycle_position }}<br>
+    <br>
     {% for day in routine.routinedays.all %}
-    {{ day.name }}<br>
-    {{ day.position }}<br>
+    {{ day.name }} - Position: {{ day.position }}<br>
 
-    {% for exercise in day.exercises.all %}
-    {{ exercise.name }}<br>
+    <ul class="collection">
+      {% for slot in day.routinedayslots.all %}
+      <li class="collection-item">
+        {{ slot.exercise.name }}
+        <a href="{% url 'delete_routinedayslot' pk=slot.id %}" class="secondary-content" >remove</a>
+      </li>
+      {% endfor %}
+    </ul>
+
+
+    <form class="col s6" action="/add_routinedayslot/" method="post">
+      {% csrf_token %}
+      <div class="input-field">
+        <input type="hidden" name="routineday" value="{{ day.id }}">
+        <select name="exercise" onchange='this.form.submit()'>
+          <option value="" disabled selected>Choose an exercise</option>
+          {% for exercise in request.user.exercises.all %}
+          <option value="{{ exercise.id }}">{{ exercise.name }}</option>
+          {% endfor %}
+        </select>
+        <label>Materialize Select</label>
+      </div>
+    </form>
+
     {% endfor %}
 
-{% endfor %}
+    <br>
+    <br>
+    <br>
+    <br>
 
 
-<a href="#modal{{ forloop.counter }}" class="modal-trigger" >delete</a>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
 
+    <a href="#modal{{ forloop.counter }}" class="modal-trigger" >
+      delete this routine
+    </a>
 
-  <!-- Modal Structure -->
-  <div id="modal{{ forloop.counter }}" class="modal">
-    <div class="modal-content">
-      <h4>Delete Routine</h4>
-      <p>Are you sure you want to delete the routine "{{ routine.name }}"?</p>
-    </div>
-    <div class="modal-footer">
-      <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat ">No</a>
-      <a href="{% url 'delete_routine' pk=routine.id %}" class=" modal-action modal-close waves-effect waves-green btn-flat">Yes</a>
-      </ul>
-    </div>
+      <div id="modal{{ forloop.counter }}" class="modal">
+        <div class="modal-content">
+          <h4>Delete Routine</h4>
+          <p>
+          Are you sure you want to delete the routine "{{ routine.name }}"?
+          </p>
+        </div>
+        <div class="modal-footer">
+          <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat ">No</a>
+          <a href="{% url 'delete_routine' pk=routine.id %}" class=" modal-action modal-close waves-effect waves-green btn-flat">Yes</a>
+    </ul>
+        </div>
+      </div>
   </div>
-</div>
-{% endfor %}
 
-<div id="create" class="col s12">
-<h5>Add a Routine</h5>
 
-<form class="col s12" action="/routines/" method="post">
-        {% csrf_token %}
+  {% endfor %}
+
+  <div id="create" class="col s12">
+    <h5>Add a Routine</h5>
+
+    <form class="col s12" action="/routines/" method="post">
+      {% csrf_token %}
       <div class="row">
         <div class="input-field col s9">
           <input name="name" id="name" type="text" class="validate">
@@ -67,25 +103,28 @@
           <label for="length">Workout length</label>
         </div>
         <div class="control-group">
-            <div class="controls">
-                <button type="submit" class="btn">Create</button>
-            </div>
+          <div class="controls">
+            <button type="submit" class="btn">Create</button>
+          </div>
         </div>
-</form>
-</div>
-</div>
-<br>
-<br>
-<br>
-<br>
+    </form>
+      </div>
+  </div>
+  <br>
+  <br>
+  <br>
+  <br>
 
-{% endblock %}
+  {% endblock %}
 
 
-{% block scripts %}
-<script>
+  {% block scripts %}
+  <script>
 $(document).ready(function() {
   $('.modal-trigger').leanModal();
 });
-</script>
-{% endblock %}
+$(document).ready(function() {
+  $('select').material_select();
+});
+  </script>
+  {% endblock %}
