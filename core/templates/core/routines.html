@@ -44,7 +44,7 @@
         <select name="exercise" onchange='this.form.submit()'>
           <option value="" disabled selected>Add an exercise</option>
           {% for exercise in request.user.exercises.all %}
-          {% if exercise in day.exercises.all %}
+          {% if exercise not in day.exercises %}
           <option value="{{ exercise.id }}">{{ exercise.name }}</option>
           {% endif %}
           {% endfor %}

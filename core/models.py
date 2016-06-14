@@ -204,6 +204,10 @@ class RoutineDay(models.Model):
         return 'RoutineDay "{}"'.format(self.name)
 
     @property
+    def exercises(self):
+        return [s.exercise for s in self.routinedayslots.all()]
+
+    @property
     def position(self):
         return self._position
 
