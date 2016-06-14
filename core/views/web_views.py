@@ -130,7 +130,7 @@ class AddRoutinedayslot(BaseView):
                 return HttpResponseRedirect('/routines/')
             except:
                 msg = "failed to schedule exercise"
-                return HttpResponseRedirect('/routines/?msg=fail')
+                return HttpResponseRedirect('/routines/?msg={}'.format(msg))
 
 @method_decorator(login_required, name='dispatch')
 class DeleteRoutinedayslot(BaseView):
