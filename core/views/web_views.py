@@ -9,6 +9,7 @@ from django.views.generic import View
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.http import *
 from core.models import (
@@ -18,7 +19,8 @@ from core.models import (
     RoutineDaySlot,
     )
 from core.chart import get_chart_data
-from core.forms import ContactForm
+from core.forms import ExerciseForm
+from core.forms import RoutineDaySlotForm
 
 class BaseView(View):
     context = {}
@@ -29,6 +31,15 @@ class BaseView(View):
         context['logged_in'] = self.request.user.is_authenticated()
         return context
 
+class DeleteModel(LoginRequiredMixin, View):
+    redirect = None
+    model = None
+    """deletes model if given the model pk"""
+    def get(self, request, pk):
+        instance = self.model.objects.get(pk=pk, owner=request.user)
+        if instance:
+            instance.delete()
+        return HttpResponseRedirect(self.redirect)
 
 class Home(BaseView):
     def get(self, request):
@@ -77,13 +88,29 @@ class Exercises(BaseView):
     def get(self, request):
         self.context = self.logged_in(self.context)
         self.context['exercises'] = Exercise.objects.filter(owner=request.user)
+        self.context['form'] = ExerciseForm
         return render(request, 'core/exercises.html', self.context)
 
+
+class AddModel(LoginRequiredMixin, View):
+    redirect = None
+    modelform = None
+
     def post(self, request):
-        name = request.POST['name']
-        bodyweight = request.POST.get('bodyweight', False)
-        Exercise.objects.create(name=name, bodyweight=bodyweight, owner=request.user)
-        return HttpResponseRedirect('/exercises')
+        form = self.modelform(request.POST)
+        if form.is_valid():
+            form.create_record(request.user)
+            return HttpResponseRedirect(self.redirect)
+        else:
+            return HttpResponseRedirect(self.redirect)
+
+class AddRoutinedayslot(AddModel):
+    redirect = '/routines/'
+    modelform = RoutineDaySlotForm
+
+class AddExercise(AddModel):
+    redirect = '/exercises/'
+    modelform = ExerciseForm
 
 @method_decorator(login_required, name='dispatch')
 class DeleteExercise(BaseView):
@@ -116,7 +143,7 @@ class DeleteRoutine(BaseView):
         return HttpResponseRedirect('/routines/')
 
 @method_decorator(login_required, name='dispatch')
-class AddRoutinedayslot(BaseView):
+class AddRoutinedayX(BaseView):
     def post(self, request):
         exercise_id = int(request.POST.get('exercise', False))
         exercise = Exercise.objects.get(pk=exercise_id)
@@ -132,10 +159,29 @@ class AddRoutinedayslot(BaseView):
                 msg = "failed to schedule exercise"
                 return HttpResponseRedirect('/routines/?msg={}'.format(msg))
 
+class DeleteRoutineday(DeleteModel):
+    redirect = '/routines/'
+    model = RoutineDay
+
 @method_decorator(login_required, name='dispatch')
-class DeleteRoutinedayslot(BaseView):
-    def get(self, request, pk):
-        routinedayslot = RoutineDaySlot.objects.get(pk=pk, owner=request.user)
-        if routinedayslot:
-            routinedayslot.delete()
-        return HttpResponseRedirect('/routines/')
+class AddRoutinedayslotX(BaseView):
+    def post(self, request):
+        exercise_id = int(request.POST.get('exercise', False))
+        exercise = Exercise.objects.get(pk=exercise_id)
+        routineday_id = int(request.POST.get('routineday', False))
+        routineday = RoutineDay.objects.get(pk=routineday_id)
+        if exercise and routineday:
+            try:
+                RoutineDaySlot.objects.create(routineday=routineday,
+                                              exercise=exercise,
+                                              owner=request.user)
+                return HttpResponseRedirect('/routines/')
+            except:
+                msg = "failed to schedule exercise"
+                return HttpResponseRedirect('/routines/?msg={}'.format(msg))
+
+
+class DeleteRoutinedayslot(DeleteModel):
+    redirect = '/routines/'
+    model = RoutineDaySlot
+

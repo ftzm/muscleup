@@ -208,6 +208,10 @@ class RoutineDay(models.Model):
         return [s.exercise for s in self.routinedayslots.all()]
 
     @property
+    def available_exercises(self):
+        return [e for e in self.owner.exercises.all() if e not in self.exercises]
+
+    @property
     def position(self):
         return self._position
 

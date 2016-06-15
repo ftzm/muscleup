@@ -27,16 +27,16 @@
 
 <h5>Add a Workout</h5>
 
-<form class="col s12" action="/exercises/" method="post">
+<form class="col s12" action="/add_exercise/" method="post">
         {% csrf_token %}
       <div class="row">
         <div class="input-field col s9">
-          <input name="name" id="name" type="text" class="validate">
-          <label for="name">Workout Name</label>
+          {{ form.name }}
+          <label for="id_name">Workout Name</label>
         </div>
         <div class="input-field col s3">
-          <input type="checkbox"  name="bodyweight" id="bodyweight" />
-          <label for="bodyweight">Bodyweight</label>
+          {{ form.bodyweight }}
+          <label for="id_bodyweight">Bodyweight</label>
       </div>
       </div>
         <div class="control-group">

@@ -43,16 +43,13 @@
         <input type="hidden" name="routineday" value="{{ day.id }}">
         <select name="exercise" onchange='this.form.submit()'>
           <option value="" disabled selected>Add an exercise</option>
-          {% for exercise in request.user.exercises.all %}
-          {% if exercise not in day.exercises %}
+          {% for exercise in day.available_exercises %}
           <option value="{{ exercise.id }}">{{ exercise.name }}</option>
-          {% endif %}
           {% endfor %}
         </select>
         <label>Materialize Select</label>
       </div>
     </form>
-
     {% endfor %}
 
     <br>
