@@ -1,5 +1,8 @@
-ensure all api serializers representing all fields correctly
+
+figure out how best to deal with situation where a getter provides the object to the serializer and it chokes.
 fix progressionslot uses _progression in serializer or w/e
+
+ensure all api serializers representing all fields correctly
 handle when not logged in
 routine creation method to ensure that position is set last, or alternatively a different position setting method that expands length.
 fake boolean finalized field on workout to run upgrade method.

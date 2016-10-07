@@ -318,7 +318,7 @@ class RoutineDaySlot(models.Model):
     @property
     def exercise(self):
         if not self.progression:
-            return self._exercise
+            return self._exercise.pk
         else:
             return self.progression.current
 
