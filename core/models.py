@@ -23,7 +23,7 @@ class MuscleupUser(AbstractBaseUser):
     email = models.EmailField(unique=True)
     nick = models.CharField(max_length=30, default="Champ")
     USERNAME_FIELD = 'email'
-    REQUIREd_FIELDS = []
+    REQUIRED_FIELDS = []
 
     @property
     def is_active(self):

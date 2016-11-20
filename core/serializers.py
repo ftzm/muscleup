@@ -13,6 +13,7 @@ from core.models import (
     ProgressionSlot,
     Set,
     Upgrade,
+    MuscleupUser,
     )
 
 class FilterRelatedMixin(object):
@@ -234,7 +235,8 @@ class WorkoutSerializer(FilterUserRelatedMixin, serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context['request']
-        return Workout.objects.create_workout(**validated_data, owner=request.user)
+        return Workout.objects.create_workout(**validated_data,
+                                              owner=request.user)
 
     def filter_routineday(self, queryset):
         request = self.context['request']
@@ -342,3 +344,15 @@ class RoutineDaySlotSerializer(FilterUserRelatedMixin,
                   'snd_weight_goal',
                   'snd_sets_goal'
                  ]
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = MuscleupUser
+
+    def create(self, validated_data):
+        user = MuscleupUser(**validated_data)
+        # Hash the user's password.
+        user.set_password(validated_data['password'])
+        user.save()
+        return user

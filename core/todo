@@ -1,3 +1,12 @@
+-write up step by step description of basic usage.
+-think of what api calls would be involved in those.
+
+
+
+
+
+
+
 
 figure out how best to deal with situation where a getter provides the object to the serializer and it chokes.
 fix progressionslot uses _progression in serializer or w/e
