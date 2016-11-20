@@ -1,0 +1,47 @@
+create account.
+send email with account activation
+login
+
+there is a default routine. Only create others if desired, options out of the way.
+
+------------------------------------------------------------
+Wizard
+
+quick start up questions:
+Are you doing one of the following workouts? [stronglifts, bodyweight, bodybuilding.com]
+    -automatically set up those is so
+    -otherwise continue
+
+How many days are your workout routine? (Including rest days)
+create a schedule thing out of the answer
+
+What days do you work out?
+click on the days to enable them
+days have default names which you can either accept or change on the spot
+
+button "continue to add exercises"
+
+cycle through workoutdays. On each workoutday, have a list of workouts. they can be reordered. Each workout has a little thing next to it prompting to "add goals"
+
+goals are upgrade conditions. perhaps use a popup to fill them in?
+have the ability to save upgrade conditions with a name but keep it out of the way.
+have the option to use previously saved upgrade conditions
+
+(Also have a message saying that if you're doing bodyweight exercises, your exercises might be part of a progression. In that case, you might like to create a progression in the app so that you upgrade to the next exercise automatically.)(save progressions for v2)
+
+once workoutdays are cycled through, ask "When would like to start?" This will prompt for a day (default tomorrow) and a day in the workout cycle. Then you're good to go.
+
+
+------------------------------------------------------------
+workout page
+
+workout page is automatically populated by the scheduled exercises and their goals for that workout. everything which has not actually been done (predicted or projected sets, you could say) has a faded appearance.
+
+workout names on left, flowing to the right are white-space separated number pairs: smaller and on top is the lifted weight, and larger below is the number of reps. the reps start at the number which is the goal, and tapping them decreases by one.
+
+
+
+------------------------------------------------------------
+home page:
+
+
