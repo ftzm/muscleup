@@ -6,7 +6,9 @@ module.exports = {
   context: path.join(__dirname, "src"),
   devtool: debug ? "inline-sourcemap" : null,
   devServer: {
-    historyApiFallback: true
+    historyApiFallback: true,
+    host: '0.0.0.0',
+    port: '8080',
   },
   entry: "./js/client.js",
   module: {

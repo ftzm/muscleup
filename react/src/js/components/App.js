@@ -1,16 +1,24 @@
 import React from 'react'
 import { Link } from 'react-router';
 import Creds from '../containers/Creds'
+import { Layout, Header, Drawer, Navigation } from 'react-mdl/lib/Layout';
 
 const App = ({ children }) => (
-  <div>
-    <ul role="nav">
-      <li><Link to="/exercises">ex</Link></li>
-      <li><Link to="/footer">fo</Link></li>
-    </ul>
-    <Creds/>
-    {children}
-  </div>
+    <Layout fixedHeader>
+      <Header title={<span><span style={{ color: '#ddd' }}>
+        Area / </span><strong>The Title</strong></span>}>
+      </Header>
+      <Drawer title="Title">
+        <Navigation>
+          <Link to="/exercises">ex</Link>
+          <Link to="/footer">fo</Link>
+          <Link to="/login">Login</Link>
+          <a href="">Link</a>
+          <a href="">Link</a>
+        </Navigation>
+      </Drawer>
+      {children}
+    </Layout>
 )
 
 export default App
