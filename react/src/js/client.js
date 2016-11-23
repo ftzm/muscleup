@@ -20,3 +20,5 @@ render(
   <Root store={store} />,
   document.getElementById('root')
 );
+
+store.dispatch(fetchToken('guy@test.com', 'passward'))
