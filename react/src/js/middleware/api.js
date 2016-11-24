@@ -52,8 +52,41 @@ function apiPost(endpoint, inputJson) {
         }
 
         return json
-      }).catch(e => console.log(e))
+      })
     )
+}
+
+function apiDelete(endpoint) {
+
+  console.log('apiDelete')
+
+  let token = localStorage.getItem('id_token') || null
+  let config = {}
+
+  if (token) {
+    config = {
+      method: 'DELETE',
+      headers: new Headers({ Authorization: `JWT ${token}` }),
+    }
+  } else {
+    throw 'No saved token'
+  }
+
+  console.log('made_config')
+  console.log(endpoint)
+
+  return fetch(API_ROOT + endpoint, config)
+    .then(response => {
+      if (response.status == 204) {
+        console.log('successful deletion')
+      } else {
+        response.json().then(json => {
+          console.log('not status 204')
+          return Promise.reject(json)
+        }).catch(e => console.log(e))
+      }
+    }
+    ).catch(e => console.log(e))
 }
 
 export const CALL_API = Symbol('Call API')
@@ -96,6 +129,35 @@ const apiPostWrapper = (next, action) => {
         response,
         type: successType,
       }),
+    error => {
+      console.log('error in wrapper')
+      console.log(error)
+      next({
+        error: error.message || 'An error occurred.',
+        type: errorType,
+      });
+    }
+  )
+}
+
+export const API_DELETE = Symbol('API DELETE')
+
+const apiDeleteWrapper = (next, action) => {
+
+  console.log('deletewrapper')
+
+  const APIDelete = action[API_DELETE]
+
+  let { endpoint, types } = APIDelete
+
+  const [requestType, successType, errorType] = types
+
+  return apiDelete(endpoint).then(
+    response =>
+      next({
+        response,
+        type: successType,
+      }),
     error =>
       next({
         error: error.message || 'An error occurred.',
@@ -109,6 +171,9 @@ export default store => next => action => {
     callApiWrapper(next, action)
   } else if (typeof action[API_POST] !== 'undefined') {
     apiPostWrapper(next, action)
+  } else if (typeof action[API_DELETE] !== 'undefined') {
+    console.log('api_hub');
+    apiDeleteWrapper(next, action)
   } else {
     return next(action)
   }

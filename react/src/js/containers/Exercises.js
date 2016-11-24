@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import { fetchExercises } from '../actions/exercises'
+import { fetchExercises, deleteExercise } from '../actions/exercises'
 import ExerciseList from '../components/ExerciseList'
 
 const mapStateToProps = (state) => {
@@ -10,7 +10,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    onFetchClick: () => dispatch(fetchExercises())
+    onFetchClick: () => dispatch(fetchExercises()),
+    onExerciseClick: (id) => dispatch(deleteExercise(id)),
   }
 }
 
