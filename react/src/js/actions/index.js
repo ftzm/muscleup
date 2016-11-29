@@ -34,6 +34,19 @@ export function failedLogin() {
   }
 }
 
+export function errorNew(message) {
+  return {
+    type: 'ERROR_NEW',
+    message: message,
+  }
+}
+
+export function errorTimeout() {
+  return {
+    type: 'ERROR_TIMEOUT',
+  }
+}
+
 export function fetchToken(email, password) {
   return function (dispatch) {
     return fetch('http://localhost:8000/api-token-auth/', {

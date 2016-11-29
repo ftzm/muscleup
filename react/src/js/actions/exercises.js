@@ -1,4 +1,4 @@
-import { CALL_API, API_POST, API_DELETE } from '../middleware/api'
+import { CALL_API, API_POST, API_DELETE, API_PUT } from '../middleware/api'
 
 export const requestExercises = () => ({
   type: 'REQUEST_EXERCISES',
@@ -15,7 +15,7 @@ export const fetchExercises = () => ({
     types: [
       'EXERCISES_REQUEST',
       'EXERCISES_SUCCESS',
-      'EXERCISES_FAILURE',
+      'ERROR_NEW',
     ],
   },
 })
@@ -26,7 +26,23 @@ export const addExercise = (name, bodyweight) => ({
     types: [
       'EXERCISES_REQUEST',
       'EXERCISES_SUCCESS',
-      'EXERCISES_FAILURE',
+      'ERROR_NEW',
+    ],
+    inputJson: {
+      name: name,
+
+      //bodyweight: bodyweight,
+    },
+  },
+})
+
+export const renameExercise = (id, name) => ({
+  [API_PUT]: {
+    endpoint: 'exercises/' + id + '/',
+    types: [
+      'EXERCISES_REQUEST',
+      'EXERCISES_RENAME',
+      'ERROR_NEW',
     ],
     inputJson: {
       name: name,
@@ -42,8 +58,8 @@ export const deleteExercise = (id) => ({
     id: id,
     types: [
       'EXERCISES_REQUEST',
-      'EXERCISES_SUCCESS',
-      'EXERCISES_FAILURE',
+      'EXERCISE_DELETED',
+      'ERROR_NEW',
     ],
   },
 })

@@ -1,179 +1,154 @@
 const API_ROOT = 'http://localhost:8000/api-v1/'
 
-//Where actual fetching happens
-function callApi(endpoint) {
-
-  let token = localStorage.getItem('id_token') || null
-  let config = {}
+function grabToken() {
+  var token = localStorage.getItem('id_token') || null
 
   if (token) {
-    config = {
-      headers: new Headers({ Authorization: `JWT ${token}` }),
-    }
+    return token
   } else {
     throw 'No saved token'
   }
+}
+
+function basicFetch(endpoint, config, types, next) {
+
+  const [requestType, successType, errorType] = types
 
   return fetch(API_ROOT + endpoint, config)
     .then(response =>
       response.json().then(json => {
         if (!response.ok) {
-          return Promise.reject(json)
+          console.log('error on server end')
+          return Promise.reject(JSON.stringify(json))
         }
 
         return json
-      }).catch(e => console.log(e))
-    )
-}
-
-function apiPost(endpoint, inputJson) {
-
-  let token = localStorage.getItem('id_token') || null
-  let config = {}
-
-  if (token) {
-    config = {
-      method: 'POST',
-      headers: new Headers({
-        Authorization: `JWT ${token}`,
-        'Content-Type': 'application/json',
+      }), error => {
+        console.log('network error?')
+        return Promise.reject(error.toString())
+      }
+    ).then(
+      response =>
+      next({
+        response,
+        type: successType,
       }),
-      body: JSON.stringify(inputJson),
-    }
-  } else {
-    throw 'No saved token'
-  }
-
-  return fetch(API_ROOT + endpoint, config)
-    .then(response =>
-      response.json().then(json => {
-        if (!response.ok) {
-          return Promise.reject(json)
-        }
-
-        return json
-      })
+      error => {
+        console.log('reached outer handler')
+        console.log(error)
+        next({
+          message: error || 'An error occurred.',
+          type: errorType,
+        });
+      }
     )
 }
 
-function apiDelete(endpoint) {
+function post(next, action) {
 
-  console.log('apiDelete')
+  let { endpoint, inputJson, types } = action
+  const [requestType, successType, errorType] = types
 
-  let token = localStorage.getItem('id_token') || null
-  let config = {}
+  let token = grabToken()
 
-  if (token) {
-    config = {
-      method: 'DELETE',
-      headers: new Headers({ Authorization: `JWT ${token}` }),
-    }
-  } else {
-    throw 'No saved token'
+  let config = {
+    method: 'POST',
+    headers: new Headers({
+      Authorization: `JWT ${token}`,
+      'Content-Type': 'application/json',
+    }),
+    body: JSON.stringify(inputJson),
   }
 
-  console.log('made_config')
-  console.log(endpoint)
+  return basicFetch(endpoint, config, types, next)
+}
+
+function put(next, action) {
+
+  let { endpoint, inputJson, types } = action
+  const [requestType, successType, errorType] = types
+
+  let token = grabToken()
+
+  let config = {
+    method: 'PUT',
+    headers: new Headers({
+      Authorization: `JWT ${token}`,
+      'Content-Type': 'application/json',
+    }),
+    body: JSON.stringify(inputJson),
+  }
+
+  return basicFetch(endpoint, config, types, next)
+}
+
+function get(next, action) {
+
+  let { endpoint, types } = action
+  const [requestType, successType, errorType] = types
+
+  let token = grabToken()
+
+  let config = {
+    headers: new Headers({ Authorization: `JWT ${token}` }),
+  }
+
+  return basicFetch(endpoint, config, types, next)
+}
+
+function apiDelete(next, action) {
+
+  console.log('reached delete')
+
+  let { endpoint, id, types } = action
+  const [requestType, successType, errorType] = types
+
+  let token = grabToken()
+
+  let config = {
+    method: 'DELETE',
+    headers: new Headers({ Authorization: `JWT ${token}` }),
+  }
 
   return fetch(API_ROOT + endpoint, config)
     .then(response => {
       if (response.status == 204) {
-        console.log('successful deletion')
+        next({
+          id: id,
+          type: successType,
+        })
       } else {
         response.json().then(json => {
-          console.log('not status 204')
-          return Promise.reject(json)
-        }).catch(e => console.log(e))
+          console.log('not 204')
+          next({
+            message: JSON.stringify(json),
+            type: errorType,
+          })
+        })
       }
-    }
-    ).catch(e => console.log(e))
+    }).catch(e => {
+      console.log('network error?')
+      next({
+        message: e.toString(),
+        type: errorType,
+      })
+    })
 }
 
 export const CALL_API = Symbol('Call API')
-
-const callApiWrapper = (next, action) => {
-
-  const callAPI = action[CALL_API]
-
-  let { endpoint, types } = callAPI
-
-  const [requestType, successType, errorType] = types
-
-  return callApi(endpoint).then(
-    response =>
-      next({
-        response,
-        type: successType,
-      }),
-    error =>
-      next({
-        error: error.message || 'An error occurred.',
-        type: errorType,
-      })
-  )
-}
-
 export const API_POST = Symbol('API POST')
-
-const apiPostWrapper = (next, action) => {
-
-  const APIPost = action[API_POST]
-
-  let { endpoint, inputJson, types } = APIPost
-
-  const [requestType, successType, errorType] = types
-
-  return apiPost(endpoint, inputJson).then(
-    response =>
-      next({
-        response,
-        type: successType,
-      }),
-    error => {
-      console.log('error in wrapper')
-      console.log(error)
-      next({
-        error: error.message || 'An error occurred.',
-        type: errorType,
-      });
-    }
-  )
-}
-
+export const API_PUT = Symbol('API PUT')
 export const API_DELETE = Symbol('API DELETE')
-
-const apiDeleteWrapper = (next, action) => {
-
-  console.log('deletewrapper')
-
-  const APIDelete = action[API_DELETE]
-
-  let { endpoint, types } = APIDelete
-
-  const [requestType, successType, errorType] = types
-
-  return apiDelete(endpoint).then(
-    response =>
-      next({
-        response,
-        type: successType,
-      }),
-    error =>
-      next({
-        error: error.message || 'An error occurred.',
-        type: errorType,
-      })
-  )
-}
 
 export default store => next => action => {
   if (typeof action[CALL_API] !== 'undefined') {
-    callApiWrapper(next, action)
+    get(next, action[CALL_API])
   } else if (typeof action[API_POST] !== 'undefined') {
-    apiPostWrapper(next, action)
+    post(next, action[API_POST])
   } else if (typeof action[API_DELETE] !== 'undefined') {
-    console.log('api_hub');
-    apiDeleteWrapper(next, action)
+    apiDelete(next, action[API_DELETE])
+  } else if (typeof action[API_PUT] !== 'undefined') {
+    put(next, action[API_PUT])
   } else {
     return next(action)
   }

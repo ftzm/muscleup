@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router';
 import Creds from '../containers/Creds'
+import ErrorToast from '../containers/ErrorToast'
 import { Layout, Header, Drawer, Navigation } from 'react-mdl/lib/Layout';
 
 const App = ({ children }) => (
@@ -18,6 +19,7 @@ const App = ({ children }) => (
         </Navigation>
       </Drawer>
       {children}
+      <ErrorToast/>
     </Layout>
 )
 
