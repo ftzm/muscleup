@@ -12,7 +12,7 @@ function grabToken() {
 
 function basicFetch(endpoint, config, types, next) {
 
-  const [requestType, successType, errorType] = types
+  const [successType, errorType] = types
 
   return fetch(API_ROOT + endpoint, config)
     .then(response =>
@@ -47,7 +47,6 @@ function basicFetch(endpoint, config, types, next) {
 function post(next, action) {
 
   let { endpoint, inputJson, types } = action
-  const [requestType, successType, errorType] = types
 
   let token = grabToken()
 
@@ -66,7 +65,6 @@ function post(next, action) {
 function put(next, action) {
 
   let { endpoint, inputJson, types } = action
-  const [requestType, successType, errorType] = types
 
   let token = grabToken()
 
@@ -85,7 +83,6 @@ function put(next, action) {
 function get(next, action) {
 
   let { endpoint, types } = action
-  const [requestType, successType, errorType] = types
 
   let token = grabToken()
 
@@ -101,7 +98,7 @@ function apiDelete(next, action) {
   console.log('reached delete')
 
   let { endpoint, id, types } = action
-  const [requestType, successType, errorType] = types
+  const [successType, errorType] = types
 
   let token = grabToken()
 

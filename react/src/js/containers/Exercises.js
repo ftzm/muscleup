@@ -1,16 +1,17 @@
 import { connect } from 'react-redux'
-import { fetchExercises, deleteExercise, renameExercise } from '../actions/exercises'
+import { Map } from 'immutable'
+import { fetchExercisesIfNeeded, deleteExercise, renameExercise } from '../actions/exercises'
 import ExerciseList from '../components/ExerciseList'
 
 const mapStateToProps = (state) => {
   return {
-    exercises: state.exercises.exercises
+    exercises: state.exercises,
   }
 }
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    onFetchClick: () => dispatch(fetchExercises()),
+    maybeFetchExercises: () => dispatch(fetchExercisesIfNeeded()),
     onExerciseClick: (id) => dispatch(deleteExercise(id)),
     rename: (name) => dispatch(rename(name)),
   }

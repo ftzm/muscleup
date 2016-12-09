@@ -1,8 +1,11 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { logout } from '../actions'
+import { Map } from 'immutable'
+
 
 let Logout = ({ dispatch }) => {
+  console.log(testMap)
   return (
     <div>
       <form onSubmit={e => {

@@ -11,8 +11,8 @@ const App = ({ children }) => (
       </Header>
       <Drawer title="Title">
         <Navigation>
-          <Link to="/exercises">ex</Link>
-          <Link to="/footer">fo</Link>
+          <Link to="/exercises">Exercises</Link>
+          <Link to="/routines">Routines</Link>
           <Link to="/login">Login</Link>
           <a href="">Link</a>
           <a href="">Link</a>

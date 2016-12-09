@@ -16,6 +16,7 @@ from core.models import (
 from core.serializers import (
     ExerciseSerializer,
     RoutineSerializer,
+    RoutineSerializerExpanded,
     RoutineDaySerializer,
     RoutineDaySlotSerializer,
     WorkoutSerializer,
@@ -125,6 +126,10 @@ class ProgressionSlotDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class RoutineList(OwndedListView):
     serializer_class = RoutineSerializer
+    query_model = Routine
+
+class RoutineListExpanded(OwndedListView):
+    serializer_class = RoutineSerializerExpanded
     query_model = Routine
 
 class RoutineDetail(OwndedDetailView):

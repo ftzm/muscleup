@@ -52,6 +52,7 @@ api_v1_patterns = [
         api_views.ProgressionSlotDetail.as_view(),
         name='progressions-progressionslots-detail'),
     url(r'^routines/$', api_views.RoutineList.as_view()),
+    url(r'^routinesexpanded/$', api_views.RoutineListExpanded.as_view()),
     url(r'^routines/(?P<pk>[0-9]+)/$',
         api_views.RoutineDetail.as_view(),
         name='routines-detail'),

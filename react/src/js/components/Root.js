@@ -6,6 +6,7 @@ import App from './App';
 import Footer from './Footer';
 import Creds from '../containers/Creds.js';
 import Exercises from '../containers/Exercises'
+import Routines from '../containers/Routines'
 
 const drawerCheck = () => {
   var l = document.querySelector('.mdl-layout').MaterialLayout
@@ -19,7 +20,7 @@ const Root = ({ store }) => (
     <Router history={browserHistory} onUpdate={drawerCheck}>
       <Route path="/" component={App}>
         <Route path="/exercises" component={Exercises}/>
-        <Route path="/footer" component={Footer}/>
+        <Route path="/routines" component={Routines}/>
         <Route path="/login" component={Creds}/>
       </Route>
     </Router>

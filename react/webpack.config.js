@@ -3,8 +3,9 @@ var webpack = require('webpack');
 var path = require('path');
 
 module.exports = {
+  cache: true,
   context: path.join(__dirname, "src"),
-  devtool: debug ? "inline-sourcemap" : null,
+  devtool: debug ? "cheap-module-eval-source-map" : null,
   devServer: {
     historyApiFallback: true,
     host: '0.0.0.0',
@@ -20,6 +21,7 @@ module.exports = {
         query: {
           presets: ['react', 'es2015', 'stage-0'],
           plugins: ['react-html-attrs', 'transform-decorators-legacy', 'transform-class-properties'],
+          cacheDirectory: true,
         }
       }
     ]

@@ -64,6 +64,7 @@ export function fetchToken(email, password) {
       .then(json => {
         if ('token' in json) {
           localStorage.setItem('id_token', json.token)
+          dispatch(errorNew('logged in'))
           dispatch(receiveToken(email, json.token))
         } else {
           dispatch(receiveToken('loger', ''))
