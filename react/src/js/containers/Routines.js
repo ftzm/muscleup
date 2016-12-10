@@ -6,14 +6,16 @@ import RoutineList from '../components/RoutineList'
 const mapStateToProps = (state) => {
   return {
     routines: state.routines,
-    routinedays: state.routinedays,
+    routinesSorted: state.routines.get('routines')
+      .valueSeq()
+      .sort((a, b) => a.get('id') - b.get('id'))
   }
 }
 
 const mapDispatchToProps = (dispatch) => {
   return {
     maybeFetchRoutines: () => dispatch(fetchRoutinesIfNeeded()),
-    onRoutineClick: (id) => dispatch(deleteRoutine(id)),
+    delete: (id) => dispatch(deleteRoutine(id)),
     rename: (name) => dispatch(renameRoutine(name)),
     fetchRoutinedays: (id) => dispatch(fetchRoutinedays(id))
   }

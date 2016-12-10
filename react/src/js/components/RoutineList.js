@@ -1,11 +1,17 @@
 import React, { Component, PropTypes } from 'react'
 import RoutineAdd from '../containers/RoutineAdd'
+import RoutinePage from '../components/RoutineList/RoutinePage'
 import RoutineRename from '../containers/RoutineRename'
 import { List, ListItem, ListItemContent, ListItemAction } from 'react-mdl/lib/List'
+import { Tabs, Tab } from 'react-mdl/lib/Tabs'
 import { Grid, Cell } from 'react-mdl/lib/Grid'
 import Spinner from 'react-mdl/lib/Spinner'
 
 class RoutineList extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { activeTab: 0 };
+  }
 
   componentDidMount() {
     this.props.maybeFetchRoutines()
@@ -14,52 +20,41 @@ class RoutineList extends Component {
   render() {
     return (
       <div>
+        <div className="demo-tabs">
+            <Tabs activeTab={this.state.activeTab}
+                  onChange={(tabId) => this.setState({ activeTab: tabId })}
+                  ripple>
+                {this.props.routinesSorted.map((r) =>
+                    <Tab key={r.get('id')}>{r.get('name')}</Tab>
+                )}
+
+          <Tab>+</Tab>
+
+
+
+            </Tabs>
+        </div> 
         <Grid className="test">
-          <Cell col={4}>
-            { this.props.routines.get('isFetching') ? <Spinner/> :
-              <List>
-                {this.props.routines.get('routines').valueSeq().map((ex) =>
-                  <ListItem key={ex.get('id')}>
-                    <ListItemContent icon="fitness_center">
-                      {ex.get('id')}<br/>
-                      {ex.get('name')}<br/>
-                      {ex.get('cycle_length')}<br/>
-                      {ex.get('cycle_position')}<br/>
-                      {ex.get('routinedays')}<br/>
-                    <div onClick={() => {
-                      this.props.fetchRoutinedays(ex.get('id'))
-                    }}>fetch</div>
-                    </ListItemContent>
-                    <ListItemAction>
-                      <div onClick={
-                        () => {
-                          onRoutineClick(ex.get('id'))
+          <Cell col={3}>
+          </Cell>
+          <Cell col={6}>
+                <section>
+                    <div className="content">
+                        {this.props.routinesSorted.map((r, i) =>
+                            i == this.state.activeTab ? (
+                             <RoutinePage delete={this.props.delete} key={r.get('id')} r={r}/>
+                            )
+                            : ''
+                        )}
+                        {this.state.activeTab == this.props.routines.get('routines').toArray().length ? (
+                           <RoutineAdd/>
+                         ) : ''
                         }
-                      }>
-                        <a href="#"><i class="material-icons">delete</i></a>
-                      </div>
-                    </ListItemAction>
-                    <RoutineRename id={ex.get('id')} />
-                  </ListItem>)
-                }
-                <ListItem>
-                  <ListItemContent icon="add">
-                    <RoutineAdd/>
-                  </ListItemContent>
-                </ListItem>
-              </List>
-            }
-        
+                    </div>
+                </section>
           </Cell>
-          <Cell col={4}>
-            <div>
-              <span>Routinedays</span>
-        { this.props.routinedays.get('routinedays').valueSeq().map(
-            (rd) => <span>{rd.get('name')}</span>
-        )}
-            </div>
+          <Cell col={3}>
           </Cell>
-          <Cell col={4}>Third column</Cell>
         </Grid>
       </div>
     )

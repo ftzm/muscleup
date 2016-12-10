@@ -7,7 +7,7 @@ import { Layout, Header, Drawer, Navigation } from 'react-mdl/lib/Layout';
 const App = ({ children }) => (
     <Layout fixedHeader>
       <Header title={<span><span style={{ color: '#ddd' }}>
-        Area / </span><strong>The Title</strong></span>}>
+        Area / </span><strong>MuscleUp</strong></span>}>
       </Header>
       <Drawer title="Title">
         <Navigation>

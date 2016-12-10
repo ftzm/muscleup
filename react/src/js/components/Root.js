@@ -4,7 +4,7 @@ import { Provider } from 'react-redux';
 import { Router, Route, browserHistory, Link } from 'react-router';
 import App from './App';
 import Footer from './Footer';
-import Creds from '../containers/Creds.js';
+import Creds from '../containers/Creds'
 import Exercises from '../containers/Exercises'
 import Routines from '../containers/Routines'
 

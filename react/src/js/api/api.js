@@ -49,7 +49,7 @@ export function apiPut(endpoint, inputJson) {
   let token = grabToken()
 
   let config = {
-    method: 'PUT',
+    method: 'PATCH',
     headers: new Headers({
       Authorization: `JWT ${token}`,
       'Content-Type': 'application/json',

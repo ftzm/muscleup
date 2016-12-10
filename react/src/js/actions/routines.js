@@ -21,9 +21,12 @@ const receiveRoutines = json => ({
 export function fetchRoutines() {
   return function(dispatch) {
     dispatch(requestRoutines())
-    return apiGet('routines/')
+    return apiGet('routinesexpanded/')
       .then(
-        p => dispatch(receiveRoutines(p)),
+        p => {
+          console.log(p)
+          dispatch(receiveRoutines(p))
+        },
         e => {
           dispatch(requestRoutinesFailure())
           dispatch({
@@ -102,7 +105,7 @@ export function deleteRoutine(id) {
     const endpoint = 'routines/' + id + '/'
     return apiDelete(endpoint, id)
       .then(
-        () => dispatch(deleteRoutineSuccess(id)),
+        p => dispatch(deleteRoutineSuccess(id)),
         e => dispatch({
           type: 'ERROR_NEW',
           message: e
