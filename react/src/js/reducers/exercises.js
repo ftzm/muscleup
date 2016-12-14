@@ -1,7 +1,7 @@
 import { Map } from 'immutable'
 
 const exercisesMap = (objectArray) =>
-  Map(objectArray.map(exercise => [exercise.id, Map(exercise)]))
+      Map(objectArray.map(exercise => [exercise.id.toString(), Map(exercise)]))
 
 const exercises = (state = Map({
   isFetching: false,

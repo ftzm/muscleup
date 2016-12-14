@@ -1,12 +1,10 @@
 import React from 'react';
 import { render } from 'react-dom';
-import { Provider } from 'react-redux';
 import { createStore, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk';
 import todoApp from './reducers';
 import { fetchToken } from './actions';
-import { fetchRoutines } from './actions/routines';
-import { fetchRoutinedays } from './actions/routinedays';
+import { fetchExercises } from './actions/exercises';
 import api from './middleware/api';
 import Root from './components/Root';
 
@@ -24,3 +22,4 @@ render(
 );
 
 store.dispatch(fetchToken('guy@test.com', 'passward'))
+store.dispatch(fetchExercises())

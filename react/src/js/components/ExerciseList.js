@@ -20,7 +20,7 @@ class ExerciseList extends Component {
               <List>
                 {this.props.exercises.get('exercises').valueSeq().map((ex) =>
                   <ListItem key={ex.get('id')}>
-                    <ListItemContent icon="fitness_center">{ex.get('name')}</ListItemContent>
+                    <ListItemContent icon="fitness_center">{ex.get('id')}{ex.get('name')}</ListItemContent>
                     <ListItemAction>
                       <div onClick={
                         () => {

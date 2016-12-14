@@ -49,6 +49,7 @@ class Exercise(models.Model):
     def __str__(self):
         return 'Exercise: "{}"'.format(self.name)
 
+
 class Routine(models.Model):
     """TODO: field explanations"""
     name = models.TextField(default="")

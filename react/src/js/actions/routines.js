@@ -40,7 +40,7 @@ export function fetchRoutines() {
 
 const shouldFetchRoutines = (state) => {
   console.log(state.routines.get('routines'))
-  
+
   return true
 }
 
@@ -106,6 +106,73 @@ export function deleteRoutine(id) {
     return apiDelete(endpoint, id)
       .then(
         p => dispatch(deleteRoutineSuccess(id)),
+        e => dispatch({
+          type: 'ERROR_NEW',
+          message: e
+        })
+      )
+  }
+}
+
+const addRoutinedaySuccess = json => ({
+  type: 'ROUTINEDAY_ADDED',
+  json: json,
+})
+
+export function addRoutineday(name, routine, position) {
+  return function(dispatch) {
+    console.log('addRoutineday')
+    const inputJson = {
+      name,
+      routine,
+      position,
+    }
+    const endpoint = 'routines/' + routine + '/routinedays/'
+    return apiPost(endpoint, inputJson)
+      .then(
+        p => dispatch(addRoutinedaySuccess(p)),
+        e => dispatch({
+          type: 'ERROR_NEW',
+          message: e
+        })
+      )
+  }
+}
+
+const deleteRoutinedaySuccess = (routine, routineday) => ({
+  type: 'ROUTINEDAY_DELETED',
+  routine,
+  routineday,
+})
+
+export function deleteRoutineday(routine, routineday) {
+  return function(dispatch) {
+    const endpoint = 'routines/' + routine + '/routinedays/' + routineday + '/'
+    return apiDelete(endpoint, routineday)
+      .then(
+        p => dispatch(deleteRoutinedaySuccess(routine, routineday)),
+        e => dispatch({
+          type: 'ERROR_NEW',
+          message: e
+        })
+      )
+  }
+}
+
+const saveRoutinedayRename = json => ({
+  type: 'ROUTINEDAY_RENAMED',
+  response: json,
+})
+
+export function renameRoutineday(routine, routineday, name) {
+  return function(dispatch) {
+    const endpoint = 'routines/' + routine + '/routinedays/' + routineday + '/'
+    const inputJson = {
+      name: name,
+    }
+    return apiPut(endpoint, inputJson)
+      .then(
+        p => dispatch(saveRoutinedayRename(p)),
         e => dispatch({
           type: 'ERROR_NEW',
           message: e

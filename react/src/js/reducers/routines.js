@@ -25,6 +25,11 @@ const convertRoutine = (routine) => {
   return Map(routine)
 }
 
+const convertRoutineday = (routineday) => {
+  routineday['routinedayslots'] = Map({})
+  return Map(routineday)
+}
+
 const routines = (state = Map({
   isFetching: false,
   routines: Map(),
@@ -37,17 +42,42 @@ const routines = (state = Map({
     case 'ROUTINES_SUCCESS':
       return state.set('isFetching', false)
         .set('routines', routinesMap(action.response))
-  case 'ROUTINE_ADDED': {
-    console.log(typeof action.response.id )
-    return state.setIn(['routines', action.response.id.toString()],
-        convertRoutine(action.response))
-  }
+    case 'ROUTINE_ADDED':
+      {
+        return state.setIn(['routines', action.response.id.toString()],
+          convertRoutine(action.response))
+      }
     case 'ROUTINE_RENAMED':
       return state.setIn(['routines', action.response.id.toString(), 'name'],
         action.response.name)
-    case 'ROUTINE_DELETED': {
-      return state.deleteIn(['routines', action.id.toString()])
-}
+    case 'ROUTINE_DELETED':
+      {
+        return state.deleteIn(['routines', action.id.toString()])
+      }
+    case 'ROUTINEDAY_ADDED':
+      {
+        return state.setIn(
+          ['routines',
+            action.json.routine.toString(),
+            'routinedays',
+            action.json.id.toString()
+          ],
+          convertRoutineday(action.json)
+        )
+      }
+    case 'ROUTINEDAY_DELETED':
+      {
+
+        return state.deleteIn(['routines', action.routine.toString(), 'routinedays', action.routineday.toString()])
+      }
+  case 'ROUTINEDAY_RENAMED':
+    return state.setIn(['routines',
+                        action.response.routine.toString(),
+                        'routinedays',
+                        action.response.id.toString(),
+                        'name'
+                        ],
+                       action.response.name)
     default:
       return state
   }

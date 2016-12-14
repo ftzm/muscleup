@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react'
 import RoutineAdd from '../containers/RoutineAdd'
-import RoutinePage from '../components/RoutineList/RoutinePage'
+import RoutinePage from '../containers/Routine'
 import RoutineRename from '../containers/RoutineRename'
 import { List, ListItem, ListItemContent, ListItemAction } from 'react-mdl/lib/List'
 import { Tabs, Tab } from 'react-mdl/lib/Tabs'
@@ -27,11 +27,7 @@ class RoutineList extends Component {
                 {this.props.routinesSorted.map((r) =>
                     <Tab key={r.get('id')}>{r.get('name')}</Tab>
                 )}
-
-          <Tab>+</Tab>
-
-
-
+                <Tab>+</Tab>
             </Tabs>
         </div> 
         <Grid className="test">
@@ -42,7 +38,7 @@ class RoutineList extends Component {
                     <div className="content">
                         {this.props.routinesSorted.map((r, i) =>
                             i == this.state.activeTab ? (
-                             <RoutinePage delete={this.props.delete} key={r.get('id')} r={r}/>
+                             <RoutinePage key={r.get('id')} r={r}/>
                             )
                             : ''
                         )}

@@ -321,9 +321,8 @@ class RoutineDaySerializer(FilterUserRelatedMixin,
                            serializers.HyperlinkedModelSerializer):
 
     position = serializers.IntegerField()
-    routine = serializers.HyperlinkedRelatedField(
+    routine = serializers.PrimaryKeyRelatedField(
         read_only=True,
-        view_name='routines-detail'
     )
     routinedayslots = RoutineDaySlotHyperlink(many=True, read_only=True)
 
@@ -369,11 +368,9 @@ class RoutineDaySlotSerializer(FilterUserRelatedMixin,
 
 class RoutineDaySlotSerializerExpansion(serializers.ModelSerializer):
 
-    exercise = serializers.HyperlinkedRelatedField(
-        view_name='exercises-detail',
+    exercise = serializers.PrimaryKeyRelatedField(
         queryset=Exercise.objects.all())
-    progression = serializers.HyperlinkedRelatedField(
-        view_name='progressions-detail',
+    progression = serializers.PrimaryKeyRelatedField(
         queryset=Progression.objects.all(),
         required=False,
         allow_null=True)
@@ -409,13 +406,11 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
-class RoutineDaySerializerExpanded(serializers.HyperlinkedModelSerializer):
+class RoutineDaySerializerExpanded(serializers.ModelSerializer):
 
     position = serializers.IntegerField()
-    routine = serializers.HyperlinkedRelatedField(
-        read_only=True,
-        view_name='routines-detail'
-    )
+    routine = serializers.PrimaryKeyRelatedField(read_only=True)
+
     routinedayslots = RoutineDaySlotSerializerExpansion(many=True, read_only=True)
 
     class Meta:

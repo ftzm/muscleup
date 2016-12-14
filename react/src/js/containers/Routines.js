@@ -1,10 +1,10 @@
 import { connect } from 'react-redux'
 import { fetchRoutinesIfNeeded, deleteRoutine, renameRoutine } from '../actions/routines'
-import { fetchRoutinedays } from '../actions/routinedays'
 import RoutineList from '../components/RoutineList'
 
 const mapStateToProps = (state) => {
   return {
+    exercises: state.exercises.get('exercises'),
     routines: state.routines,
     routinesSorted: state.routines.get('routines')
       .valueSeq()
