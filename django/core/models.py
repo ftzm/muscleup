@@ -291,6 +291,7 @@ class RoutineDaySlot(models.Model):
     sets_min = models.IntegerField(default=0)
     sets_max = models.IntegerField(default=0)
     weight_step = models.IntegerField(default=0)
+    fail_count = models.IntegerField(default=0)
 
     class Meta:
         unique_together = ('_exercise', 'routineday')
@@ -364,29 +365,6 @@ class Workout(models.Model):
                               related_name='workouts')
 
     objects = WorkoutManager()
-
-    def upgrade_exercises(self):
-        slots = self.routineday.routinedayslots.all()
-        for slot in slots:
-            sets = [s for s in self.sets.all()
-                    if s.exercise == slot.exercise]
-            if len(sets) >= slot.main_sets_goal and \
-                min([s.weight for s in sets]) >= slot.main_weight_goal and \
-                min([s.reps for s in sets]) >= slot.main_sets_goal:
-                slot.main_sets_goal += slot.upgrade.main_sets_adj
-                slot.main_reps_goal += slot.upgrade.main_reps_adj
-                slot.main_weight_goal += slot.upgrade.main_weight_adj
-                slot.save()
-            elif len(sets) >= slot.snd_sets_goal and \
-                min([s.weight for s in sets]) >= slot.snd_weight_goal and \
-                min([s.reps for s in sets]) >= slot.snd_sets_goal:
-                slot.snd_sets_goal += slot.upgrade.snd_sets_adj
-                slot.snd_reps_goal += slot.upgrade.snd_reps_adj
-                slot.snd_weight_goal += slot.upgrade.snd_weight_adj
-                slot.save()
-            else:
-                continue
-
 
 class Set(models.Model):
     exercise = models.ForeignKey(
