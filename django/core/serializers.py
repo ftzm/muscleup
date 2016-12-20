@@ -339,15 +339,14 @@ class RoutineDaySerializer(FilterUserRelatedMixin,
 class RoutineDaySlotSerializer(FilterUserRelatedMixin,
                                serializers.ModelSerializer):
 
-    exercise = serializers.HyperlinkedRelatedField(
-        view_name='exercises-detail',
+    exercise = serializers.PrimaryKeyRelatedField(
         queryset=Exercise.objects.all())
-    progression = serializers.HyperlinkedRelatedField(
-        view_name='progressions-detail',
+    progression = serializers.PrimaryKeyRelatedField(
         queryset=Progression.objects.all(),
         required=False,
         allow_null=True)
-    routineday = RoutineDayHyperlink(queryset=RoutineDay.objects.all())
+    routineday = serializers.PrimaryKeyRelatedField(
+        queryset=RoutineDay.objects.all())
 
     class Meta:
         model = RoutineDaySlot

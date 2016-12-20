@@ -1,8 +1,7 @@
 """database signals"""
-from django.db.models.signals import post_delete
+from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
-from core.models import RoutineDaySlot
-from core.models import ProgressionSlot
+from core.models import RoutineDaySlot, ProgressionSlot
 
 
 @receiver(post_delete, sender=RoutineDaySlot)
@@ -15,3 +14,8 @@ def trigger_routinedayslot_gapclose(**kwargs):
 def trigger_progressionslot_gapclose(**kwargs):
     instance = kwargs['instance']
     instance.progression.close_gap(instance.order)
+
+@receiver(pre_save, sender=RoutineDaySlot)
+def trigger_routinedayslot_order(sender, **kwargs):
+    instance = kwargs['instance']
+    instance.apply_order()

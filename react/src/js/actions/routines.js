@@ -180,3 +180,53 @@ export function renameRoutineday(routine, routineday, name) {
       )
   }
 }
+
+const addRoutinedayslotSuccess = (routine, json) => ({
+  type: 'ROUTINEDAYSLOT_ADDED',
+  routine, 
+  json: json,
+})
+
+export function addRoutinedayslot(routine, routineday, exercise) {
+  console.log('firing')
+  return function(dispatch) {
+    const inputJson = {
+      routineday,
+      exercise,
+    }
+    const endpoint = 'routines/' + routine +
+      '/routinedays/' + routineday + /slots/
+    return apiPost(endpoint, inputJson)
+      .then(
+        p => dispatch(addRoutinedayslotSuccess(routine, p)),
+        e => dispatch({
+          type: 'ERROR_NEW',
+          message: e
+        })
+     )
+  }
+}
+
+const deleteRoutinedayslotSuccess = (routine, routineday, id) => ({
+  type: 'ROUTINEDAYSLOT_DELETED',
+  routine,
+  routineday,
+  id,
+})
+
+export function deleteRoutinedayslot(routine, routineday, id) {
+  return function(dispatch) {
+    const endpoint = 'routines/' + routine +
+          '/routinedays/' + routineday +
+          '/slots/' + id +
+          '/'
+    return apiDelete(endpoint, routineday)
+      .then(
+        p => dispatch(deleteRoutinedayslotSuccess(routine, routineday, id)),
+        e => dispatch({
+          type: 'ERROR_NEW',
+          message: e
+        })
+      )
+  }
+}

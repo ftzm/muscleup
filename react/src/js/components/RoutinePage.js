@@ -84,7 +84,18 @@ export default class Header extends React.Component {
                           <ListItemContent>
                               {this.props.exercises.getIn([(rds.get('exercise')
                                  .toString()), 'name'])}
+                              {rds.get('order')}
                           </ListItemContent>
+                          <ListItemAction>
+                          <div onClick={
+                              () => {
+                              this.props.deleteRoutinedayslot(rd.get('routine'), rd.get('id'), rds.get('id'))
+                              }
+                          }>
+
+                              <a href="#"><i class="material-icons">delete</i></a>
+                          </div>
+                          </ListItemAction>
                       </ListItem>
                       ))}
                       <ListItem>

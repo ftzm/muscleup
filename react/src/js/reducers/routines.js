@@ -78,6 +78,27 @@ const routines = (state = Map({
                         'name'
                         ],
                        action.response.name)
+  case 'ROUTINEDAYSLOT_DELETED':
+    return state.deleteIn(['routines',
+                            action.routine.toString(),
+                            'routinedays',
+                            action.routineday.toString(),
+                            'routinedayslots',
+                            action.id.toString()
+                          ])
+  case 'ROUTINEDAYSLOT_ADDED':
+    {
+      return state.setIn(
+        ['routines',
+         action.routine.toString(),
+         'routinedays',
+         action.json.routineday.toString(),
+         'routinedayslots',
+         action.json.id.toString()
+        ],
+        Map(action.json)
+      )
+    }
     default:
       return state
   }

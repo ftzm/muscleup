@@ -257,14 +257,15 @@ class RoutineDaySlot(models.Model):
     relationship model between routineday and exercise,
     exists for ordering
     """
+
     _exercise = models.ForeignKey(
         Exercise, default=1, on_delete=models.CASCADE,
         related_name='routinedayslots', db_column="exercise")
-    _routineday = models.ForeignKey(
+    routineday = models.ForeignKey(
         RoutineDay, default=1, on_delete=models.CASCADE,
         db_column='routineday',
         related_name='routinedayslots')
-    _order = models.IntegerField(default=1, db_column="order")
+    _order = models.IntegerField(default=0, db_column="order")
     progression = models.ForeignKey(
         Progression, null=True, on_delete=models.CASCADE)
     upgrade = models.ForeignKey(
@@ -279,7 +280,7 @@ class RoutineDaySlot(models.Model):
                               related_name='routinedayslots')
 
     class Meta:
-        unique_together = ('_exercise','_routineday')
+        unique_together = ('_exercise', 'routineday')
 
     @property
     def order(self):
@@ -303,18 +304,11 @@ class RoutineDaySlot(models.Model):
                 slot.save()
         self._order = new_order
 
-    @property
-    def routineday(self):
-        return self._routineday
-
-    @routineday.setter
-    def routineday(self, routineday):
-        try:
-            self._order = 1 + \
-                max([r.order for r in routineday.routinedayslots.all()])
-        except ValueError:
-            pass
-        self._routineday = routineday
+    def apply_order(self):
+        print(self._order)
+        peer_count = len(self.routineday.routinedayslots.all())
+        if self._order == 0:
+            self._order = peer_count + 1
 
     @property
     def exercise(self):
