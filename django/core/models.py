@@ -42,7 +42,8 @@ class MuscleupUser(AbstractBaseUser):
 
 class Exercise(models.Model):
     name = models.TextField(default="", unique=True)
-    owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
+    owner = models.ForeignKey(MuscleupUser, default=1,
+                              on_delete=models.CASCADE,
                               related_name='exercises')
     bodyweight = models.BooleanField(default=False)
 
@@ -58,7 +59,8 @@ class Routine(models.Model):
     _cycle_position = models.IntegerField(
         default=1, db_column="cycle_position")
     cycle_last_set = models.DateField(default=timezone.now)
-    owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
+    owner = models.ForeignKey(MuscleupUser, default=1,
+                              on_delete=models.CASCADE,
                               related_name='routines')
     active = models.BooleanField(default=True)
 
@@ -96,9 +98,11 @@ class Routine(models.Model):
             pass
         self.cycle_last_set = datetime.date.today()
 
+
 class Progression(models.Model):
     name = models.TextField(default="")
-    owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
+    owner = models.ForeignKey(MuscleupUser, default=1,
+                              on_delete=models.CASCADE,
                               related_name='progressions')
 
     def add_exercise(self, exercise):
@@ -115,9 +119,11 @@ class Progression(models.Model):
             if slot.order > gap:
                 slot._order -= 1
                 slot.save()
+
     @property
     def current(self):
         return self.progressionslots.filter(_current=True).first().exercise
+
 
 class ProgressionSlot(models.Model):
     """
@@ -133,7 +139,8 @@ class ProgressionSlot(models.Model):
         db_column="progression")
     _order = models.IntegerField(default=1, db_column="order")
     _current = models.BooleanField(default=False, db_column="current")
-    owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
+    owner = models.ForeignKey(MuscleupUser, default=1,
+                              on_delete=models.CASCADE,
                               related_name='progressionslots')
 
     @property
@@ -187,6 +194,7 @@ class ProgressionSlot(models.Model):
                 previous.save()
             self._current = value
 
+
 class RoutineDay(models.Model):
     """
     Model representing a day in a fitness routine.
@@ -198,7 +206,8 @@ class RoutineDay(models.Model):
         related_name='routinedays')
     _position = models.IntegerField(
         default=1, db_column="position")
-    owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
+    owner = models.ForeignKey(MuscleupUser, default=1,
+                              on_delete=models.CASCADE,
                               related_name='routinedays')
 
     def __str__(self):
@@ -210,7 +219,8 @@ class RoutineDay(models.Model):
 
     @property
     def available_exercises(self):
-        return [e for e in self.owner.exercises.all() if e not in self.exercises]
+        return [e for e in self.owner.exercises.all()
+                if e not in self.exercises]
 
     @property
     def position(self):
@@ -248,7 +258,8 @@ class Upgrade(models.Model):
     snd_reps_adj = models.IntegerField(default=0)
     snd_weight_adj = models.IntegerField(default=0)
     snd_sets_adj = models.IntegerField(default=0)
-    owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
+    owner = models.ForeignKey(MuscleupUser, default=1,
+                              on_delete=models.CASCADE,
                               related_name='upgrades')
 
 
@@ -270,14 +281,16 @@ class RoutineDaySlot(models.Model):
         Progression, null=True, on_delete=models.CASCADE)
     upgrade = models.ForeignKey(
         Upgrade, null=True)
-    main_reps_goal = models.IntegerField(default=0)
-    main_weight_goal = models.IntegerField(default=0)
-    main_sets_goal = models.IntegerField(default=0)
-    snd_reps_goal = models.IntegerField(default=0)
-    snd_weight_goal = models.IntegerField(default=0)
-    snd_sets_goal = models.IntegerField(default=0)
-    owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
+    owner = models.ForeignKey(MuscleupUser, default=1,
+                              on_delete=models.CASCADE,
                               related_name='routinedayslots')
+
+    reps_min = models.IntegerField(default=0)
+    reps_max = models.IntegerField(default=0)
+    reps_step = models.IntegerField(default=0)
+    sets_min = models.IntegerField(default=0)
+    sets_max = models.IntegerField(default=0)
+    weight_step = models.IntegerField(default=0)
 
     class Meta:
         unique_together = ('_exercise', 'routineday')
@@ -321,7 +334,8 @@ class RoutineDaySlot(models.Model):
     def exercise(self, exercise):
         self._exercise = exercise
 
-class WorkoutManager(models.Manager): #pylint: disable=too-few-public-methods
+
+class WorkoutManager(models.Manager):  # pylint: disable=too-few-public-methods
     def create_workout(self, routineday=None, date=None, name=None, owner=None):
         if name is None:
             if routineday is not None:
