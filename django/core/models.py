@@ -239,7 +239,7 @@ class RoutineDay(models.Model):
             routineday=self, exercise=exercise)
 
     def remove_exercise(self, name):
-        routinedayslot = self.routinedayslots.filter(_exercise__name=name)
+        routinedayslot = self.routinedayslots.filter(exercise__name=name)
         if routinedayslot:
             routinedayslot.delete()
 
@@ -269,7 +269,7 @@ class RoutineDaySlot(models.Model):
     exists for ordering
     """
 
-    _exercise = models.ForeignKey(
+    exercise = models.ForeignKey(
         Exercise, default=1, on_delete=models.CASCADE,
         related_name='routinedayslots', db_column="exercise")
     routineday = models.ForeignKey(
@@ -291,10 +291,11 @@ class RoutineDaySlot(models.Model):
     sets_min = models.IntegerField(default=0)
     sets_max = models.IntegerField(default=0)
     weight_step = models.IntegerField(default=0)
+
     fail_count = models.IntegerField(default=0)
 
     class Meta:
-        unique_together = ('_exercise', 'routineday')
+        unique_together = ('exercise', 'routineday')
 
     @property
     def order(self):
@@ -319,28 +320,21 @@ class RoutineDaySlot(models.Model):
         self._order = new_order
 
     def apply_order(self):
-        print(self._order)
         peer_count = len(self.routineday.routinedayslots.all())
         if self._order == 0:
             self._order = peer_count + 1
 
-    @property
-    def exercise(self):
-        if not self.progression:
-            return self._exercise.pk
-        else:
-            return self.progression.current
-
-    @exercise.setter
-    def exercise(self, exercise):
-        self._exercise = exercise
-
-
 class WorkoutManager(models.Manager):  # pylint: disable=too-few-public-methods
-    def create_workout(self, routineday=None, date=None, name=None, owner=None):
+    def create_workout(self,
+                       routineday=None,
+                       owner=None,
+                       date=None,
+                       name=None,
+                       ):
         if name is None:
             if routineday is not None:
-                previous = Workout.objects.filter(routineday=routineday).count()
+                previous = Workout.objects.filter(
+                    routineday=routineday).count()
                 name = "{} - {} - {}".format(
                     routineday.routine.name, routineday.name, previous+1)
             else:
@@ -361,10 +355,13 @@ class Workout(models.Model):
     routineday = models.ForeignKey(
         RoutineDay, null=True, on_delete=models.CASCADE,
         related_name='workouts')
-    owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
+    owner = models.ForeignKey(MuscleupUser,
+                              default=1,
+                              on_delete=models.CASCADE,
                               related_name='workouts')
 
     objects = WorkoutManager()
+
 
 class Set(models.Model):
     exercise = models.ForeignKey(
@@ -375,6 +372,6 @@ class Set(models.Model):
     workout = models.ForeignKey(
         Workout, default=1, on_delete=models.CASCADE,
         related_name='sets')
-    owner = models.ForeignKey(MuscleupUser, default=1, on_delete=models.CASCADE,
+    owner = models.ForeignKey(MuscleupUser, default=1,
+                              on_delete=models.CASCADE,
                               related_name='sets')
-

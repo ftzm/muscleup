@@ -347,40 +347,7 @@ class RoutineDaySlotModelTest(TestCase):
 
         self.assertEqual(second_routinedayslot.order, 1)
         self.assertEqual(third_routinedayslot.order, 2)
-
-
-    def test_add_progression_to_slot(self):
-        progression = Progression.objects.create(name="Handstand")
-        ProgressionSlot.objects.create(
-            progression=Progression.objects.get(name="Handstand"),
-            exercise=Exercise.objects.get(name="Plank"),
-            current=True)
-        ProgressionSlot.objects.create(
-            progression=Progression.objects.get(name="Handstand"),
-            exercise=Exercise.objects.get(name="Pushup"))
-
-        RoutineDaySlot.objects.create(progression=progression)
-        routinedayslot = RoutineDaySlot.objects.all().first()
-
-        self.assertEqual(routinedayslot.exercise.name, "Plank")
-
-    def test_exercise_updates_with_progression(self):
-        progression = Progression.objects.create(name="Handstand")
-        ProgressionSlot.objects.create(
-            progression=Progression.objects.get(name="Handstand"),
-            exercise=Exercise.objects.get(name="Plank"),
-            current=True)
-        ProgressionSlot.objects.create(
-            progression=Progression.objects.get(name="Handstand"),
-            exercise=Exercise.objects.get(name="Pushup"))
-        RoutineDaySlot.objects.create(progression=progression)
-        routinedayslot = RoutineDaySlot.objects.all().first()
-
-        pushup = ProgressionSlot.objects.get(exercise__name="Pushup")
-        pushup.current = True
-        pushup.save()
-
-        self.assertEqual(routinedayslot.exercise.name, "Pushup")
+        
 
 class ProgressionModelTest(TestCase):
 
@@ -552,14 +519,16 @@ class WorkoutModelTest(TestCase):
         second_routineday.position = 7
         second_routineday.save()
 
+        create_user()
+
     def test_saving_and_retrieving_workouts(self):
         Workout.objects.create_workout(
-            RoutineDay.objects.get(name="A"))
+            RoutineDay.objects.get(name="A"), get_user())
         Workout.objects.create_workout(
-            RoutineDay.objects.get(name="A"))
+            RoutineDay.objects.get(name="A"), get_user())
         Workout.objects.create_workout(
-            RoutineDay.objects.get(name="B"))
-        Workout.objects.create_workout()
+            RoutineDay.objects.get(name="B"), get_user())
+        Workout.objects.create_workout(owner=get_user())
 
         saved_workouts = Workout.objects.all()
         self.assertEqual(saved_workouts.count(), 4)
@@ -598,12 +567,15 @@ class ExerciseWorkoutSetTest(TestCase):
         exercises = [Exercise.objects.create(name=name)
                      for name in exercise_names]
 
+        create_user()
+
         for exercise in exercises:
             RoutineDaySlot.objects.create(
                 exercise=exercise,
                 routineday=first_routineday)
 
-        workouts = [Workout.objects.create_workout(routineday=first_routineday)
+        workouts = [Workout.objects.create_workout(routineday=first_routineday,
+                                                   owner=get_user())
                     for i in range(3)]
 
         for workout in workouts:
@@ -632,53 +604,3 @@ class ExerciseWorkoutSetTest(TestCase):
 
         todays_sets = Set.objects.filter(workout__date=datetime.date.today())
         self.assertEqual(todays_sets.count(), 24)
-
-class UpgradeModelTest(TestCase):
-    def setUp(self):
-        exercise = Exercise.objects.create(name="Bench")
-        routine = Routine.objects.create(name="Stronglifts")
-        routineday = RoutineDay.objects.create(name="A", routine=routine)
-        RoutineDaySlot.objects.create(routineday=routineday, \
-            main_reps_goal=5, main_weight_goal=50, main_sets_goal=5, \
-            snd_reps_goal=20, snd_weight_goal=0, snd_sets_goal=0, \
-            exercise=exercise)
-
-    def test_saving_and_retrieving_upgrade(self):
-        Upgrade.objects.create(name="Stronglifts")
-
-        self.assertEqual(Upgrade.objects.count(), 1)
-        self.assertEqual(Upgrade.objects.first().name, "Stronglifts")
-
-    def test_upgrade_exercise_main(self):
-        exercise = Exercise.objects.first()
-        upgrade = Upgrade.objects.create(name="Stronglifts", main_weight_adj=5)
-        routineday = RoutineDay.objects.first()
-        routinedayslot = RoutineDaySlot.objects.first()
-        routinedayslot.upgrade = upgrade
-        routinedayslot.save()
-        workout = Workout.objects.create_workout(routineday=routineday)
-        for _ in range(5):
-            Set.objects.create(exercise=exercise, reps=5, weight=50,
-                               workout=workout)
-
-        workout.upgrade_exercises()
-        routinedayslot = RoutineDaySlot.objects.first()
-
-        self.assertEqual(routinedayslot.main_weight_goal, 55)
-
-    def test_upgrade_exercise_snd(self):
-        exercise = Exercise.objects.first()
-        upgrade = Upgrade.objects.create(name="Stronglifts", snd_reps_adj=1)
-        routineday = RoutineDay.objects.first()
-        routinedayslot = RoutineDaySlot.objects.first()
-        routinedayslot.upgrade = upgrade
-        routinedayslot.save()
-        workout = Workout.objects.create_workout(routineday=routineday)
-        for _ in range(5):
-            Set.objects.create(exercise=exercise, reps=20, weight=49,
-                               workout=workout)
-
-        workout.upgrade_exercises()
-        routinedayslot = RoutineDaySlot.objects.first()
-
-        self.assertEqual(routinedayslot.snd_reps_goal, 21)
