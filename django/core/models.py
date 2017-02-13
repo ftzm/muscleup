@@ -281,6 +281,7 @@ class RoutineDaySlot(models.Model):
         Progression, null=True, on_delete=models.CASCADE)
     upgrade = models.ForeignKey(
         Upgrade, null=True)
+    failure_count = models.IntegerField(default=0)
     owner = models.ForeignKey(MuscleupUser, default=1,
                               on_delete=models.CASCADE,
                               related_name='routinedayslots')
@@ -293,6 +294,7 @@ class RoutineDaySlot(models.Model):
     weight_step = models.IntegerField(default=0)
 
     fail_count = models.IntegerField(default=0)
+    fail_limit = models.IntegerField(default=0)
 
     class Meta:
         unique_together = ('exercise', 'routineday')
@@ -324,13 +326,9 @@ class RoutineDaySlot(models.Model):
         if self._order == 0:
             self._order = peer_count + 1
 
+
 class WorkoutManager(models.Manager):  # pylint: disable=too-few-public-methods
-    def create_workout(self,
-                       routineday=None,
-                       owner=None,
-                       date=None,
-                       name=None,
-                       ):
+    def create_name(self, name, routineday):
         if name is None:
             if routineday is not None:
                 previous = Workout.objects.filter(
@@ -341,11 +339,65 @@ class WorkoutManager(models.Manager):  # pylint: disable=too-few-public-methods
                 previous = Workout.objects.filter(
                     routineday__isnull=True).count()
                 name = "Untitled - {}".format(previous+1)
+        return name
+
+    def create_predicted_sets(self, routineday, last_workout, workout):
+        if not routineday:
+            return
+
+        for rds in routineday.routinedayslots.all():
+            if last_workout:
+                previous_sets = last_workout.sets.filter(
+                    exercise=rds.exercise)
+            else:
+                previous_sets = None
+
+            if previous_sets:
+                if rds.fail_count == 0:
+                    new_sets = previous_sets.count()
+                    new_weight = previous_sets.last().weight + rds.weight_step
+                    new_reps = rds.reps_min
+                elif rds.fail_count < rds.fail_limit:
+                    new_sets = previous_sets.count()
+                    new_weight = previous_sets.last().weight
+                    new_reps = previous_sets.last().planned_reps
+                else:
+                    new_sets = previous_sets.count()
+                    new_weight = previous_sets.last().weight
+                    new_reps = previous_sets.last().planned_reps
+            else:
+                new_sets = rds.sets_min
+                new_reps = rds.reps_min
+                new_weight = 0
+
+            for _ in range(new_sets):
+                Set.objects.create(
+                    exercise=rds.exercise,
+                    workout=workout,
+                    planned_reps=new_reps,
+                    weight=new_weight)
+            else:
+                pass
+
+    def create_workout(self,
+                       routineday=None,
+                       owner=None,
+                       date=None,
+                       name=None,
+                       ):
+
+        last_workout = Workout.objects.filter(routineday=routineday).last()
+
+        name = self.create_name(name, routineday)
+
         if date is None:
             date = datetime.date.today()
 
         workout = self.create(
             routineday=routineday, name=name, date=date, owner=owner)
+
+        self.create_predicted_sets(routineday, last_workout, workout)
+
         return workout
 
 
@@ -367,8 +419,9 @@ class Set(models.Model):
     exercise = models.ForeignKey(
         Exercise, default=1, on_delete=models.CASCADE,
         related_name='sets')
+    planned_reps = models.IntegerField(default=1)
     reps = models.IntegerField(default=1)
-    weight = models.IntegerField(null=True)
+    weight = models.IntegerField(default=1)
     workout = models.ForeignKey(
         Workout, default=1, on_delete=models.CASCADE,
         related_name='sets')
