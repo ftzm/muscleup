@@ -63,3 +63,4 @@ target/
 
 migrations/
 *.sqlite3
+**/static
